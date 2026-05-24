@@ -1,3 +1,6 @@
+Вот полный обновлённый код со всеми исправлениями:
+
+```html
 <!DOCTYPE html>
 <html>
   <head>
@@ -45,10 +48,10 @@
           animation__return="property: rotation; to: 90 180 -135; dur: 180; startEvents: return; easing: easeOutQuad"
         ></a-gltf-model>
 
-       <a-image id="tooltip-img" src="#tooltip"
-        position="0 0 0.15" width="0.4" height="0.4"
-        visible="false"
-        animation__pulse="property: position; from: 0 0 0.15; to: 0 0 0.22; dur: 800; loop: true; dir: alternate; easing: easeInOutSine"></a-image>
+        <a-image id="tooltip-img" src="#tooltip"
+          position="0 0 0.2" width="0.4" height="0.4"
+          visible="false"></a-image>
+
         <a-image id="p1" src="#phrase1"
           position="-0.22 0.26 0.05" width="0.45" height="0.0666"
           scale="0.001 0.001 1" visible="false"></a-image>
@@ -57,7 +60,6 @@
           position="0.22 0.26 0.05" width="0.45" height="0.0642"
           scale="0.001 0.001 1" visible="false"></a-image>
 
-        <!-- second row -->
         <a-image id="p3" src="#phrase3"
           position="-0.22 0.14 0.05" width="0.45" height="0.0621"
           scale="0.001 0.001 1" visible="false"></a-image>
@@ -66,7 +68,6 @@
           position="0.22 0.14 0.05" width="0.45" height="0.0574"
           scale="0.001 0.001 1" visible="false"></a-image>
 
-        <!-- third row -->
         <a-image id="p5" src="#phrase5"
           position="-0.22 -0.15 0.05" width="0.34" height="0.1066"
           scale="0.001 0.001 1" visible="false"></a-image>
@@ -75,7 +76,6 @@
           position="0.22 -0.15 0.05" width="0.39" height="0.0751"
           scale="0.001 0.001 1" visible="false"></a-image>
 
-        <!-- bottom row -->
         <a-image id="p7" src="#phrase7"
           position="-0.22 -0.25 0.05" width="0.41" height="0.0633"
           scale="0.001 0.001 1" visible="false"></a-image>
@@ -114,13 +114,14 @@
       targetEntity.addEventListener('targetLost', () => {
         lyreMusic.pause()
         tooltipImg.setAttribute('visible', false)
+        tooltipImg.removeAttribute('animation__pulse')
       })
 
       targetEntity.addEventListener('targetFound', () => {
         if (musicStarted) lyreMusic.play()
-        setTimeout(() => {
-          tooltipImg.setAttribute('visible', true)
-        }, 5000)
+        tooltipImg.setAttribute('visible', true)
+        tooltipImg.setAttribute('animation__pulse',
+          'property: position; from: 0 0 0.2; to: 0 0 0.28; dur: 800; loop: true; dir: alternate; easing: easeInOutSine')
       })
 
       document.addEventListener('click', function () {
@@ -130,6 +131,7 @@
         }
 
         tooltipImg.setAttribute('visible', false)
+        tooltipImg.removeAttribute('animation__pulse')
 
         if (animating || step >= phrases.length) return
         animating = true
@@ -137,28 +139,23 @@
         hammerSound.currentTime = 0
         hammerSound.play()
 
-        // hammer strike animation
         hammer.emit('hit')
 
-        // show phrase after hammer returns
         setTimeout(() => {
           hammer.emit('return')
 
           const phrase = phrases[step]
           const el = phrase.el
 
-          // 1. Appear small at center
           el.setAttribute('visible', true)
           el.setAttribute('position', '0 0 0.05')
           el.setAttribute('scale', '0.1 0.1 1')
 
-          // 2. Grow to large size
           setTimeout(() => {
             el.setAttribute('animation__grow',
               'property: scale; from: 0.1 0.1 1; to: 1.5 1.5 1; dur: 700; easing: easeOutBack')
           }, 50)
 
-          // 3. Shrink and fly to final position
           setTimeout(() => {
             el.setAttribute('animation__shrink',
               'property: scale; to: 1 1 1; dur: 500; easing: easeInOutQuad')
@@ -170,10 +167,12 @@
             animating = false
             step++
             tooltipImg.setAttribute('visible', true)
+            tooltipImg.setAttribute('animation__pulse',
+              'property: position; from: 0 0 0.2; to: 0 0 0.28; dur: 800; loop: true; dir: alternate; easing: easeInOutSine')
 
-            // hide hammer after last phrase
             if (step >= phrases.length) {
               tooltipImg.setAttribute('visible', false)
+              tooltipImg.removeAttribute('animation__pulse')
               setTimeout(() => {
                 hammer.setAttribute('visible', false)
               }, 600)
@@ -185,3 +184,4 @@
     </script>
   </body>
 </html>
+```

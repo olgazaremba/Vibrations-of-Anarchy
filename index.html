@@ -46,8 +46,9 @@
         ></a-gltf-model>
 
         <a-image id="tooltip-img" src="#tooltip"
-          position="0 0 0.05" width="0.3" height="0.1"
-          visible="false"></a-image>
+          position="0 0.35 0.05" width="0.3" height="0.1"
+          visible="false"
+          animation__pulse="property: position; from: 0 0.35 0.05; to: 0 0.35 0.12; dur: 800; loop: true; dir: alternate; easing: easeInOutSine"></a-image>
 
         <!-- top row -->
         <a-image id="p1" src="#phrase1"

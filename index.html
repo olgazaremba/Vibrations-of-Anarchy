@@ -78,7 +78,7 @@
           scale="0.001 0.001 1" visible="false"></a-image>
 
         <a-image id="tooltip-img" src="#tooltip"
-          position="0 0.15 0.3" width="0.3" height="0.3"
+          position="0 0 0.3" width="0.3" height="0.3"
           visible="false"></a-image>
 
       </a-entity>
@@ -118,7 +118,7 @@
         if (musicStarted) lyreMusic.play()
         tooltipImg.setAttribute('visible', true)
         tooltipImg.setAttribute('animation__pulse',
-          'property: position; from: 0  0.15 0.3; to: 0  0.15 0.45; dur: 800; loop: true; dir: alternate; easing: easeInOutSine')
+          'property: position; from: 0 0 0.3; to: 0 0 0.45; dur: 800; loop: true; dir: alternate; easing: easeInOutSine')
       })
 
       document.addEventListener('click', function () {

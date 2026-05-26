@@ -91,9 +91,9 @@
           src="#poeta-model"
           position="0 0 0"
           rotation="90 0 0"
-          scale="1 1 1"
+          scale="0.3 0.3 0.3"
           visible="false"
-          animation-mixer="clip: Action.002; loop: once; clampWhenFinished: true"
+          animation-mixer="clip: Action.002; loop: repeat"
         ></a-gltf-model>
       </a-entity>
 
@@ -125,15 +125,16 @@
       const targetEntity2 = document.getElementById('target-entity-2')
       const poetaModel = document.getElementById('poeta')
 
+      let poetaLoaded = false
       let poetaStarted = false
 
-     targetEntity2.addEventListener('targetFound', () => {
-     if (!poetaStarted) {
+      poetaModel.addEventListener('model-loaded', () => {
+      poetaLoaded = true
+    })
+
+    targetEntity2.addEventListener('targetFound', () => {
+    if (!poetaStarted && poetaLoaded) {
     poetaModel.setAttribute('visible', true)
-    
-    setTimeout(() => {
-      poetaModel.components['animation-mixer'].play()
-    }, 100)
     poetaStarted = true
     }
     })

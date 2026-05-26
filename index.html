@@ -85,7 +85,7 @@
 
       </a-entity>
 
-      <a-entity mindar-image-target="targetIndex: 1" id="target-entity-2"></a-entity>
+      <a-entity mindar-image-target="targetIndex: 1" id="target-entity-2">
         <a-gltf-model
           id="poeta"
           src="#poeta-model"
@@ -93,7 +93,7 @@
           rotation="90 0 0"
           scale="1 1 1"
           visible="false"
-          animation-mixer="clip: Action.002; loop: repeat"
+          animation-mixer="clip: Action.002; loop: once; clampWhenFinished: true"
         ></a-gltf-model>
       </a-entity>
 
@@ -125,8 +125,17 @@
       const targetEntity2 = document.getElementById('target-entity-2')
       const poetaModel = document.getElementById('poeta')
 
-      targetEntity2.addEventListener('targetFound', () => {
-      poetaModel.setAttribute('visible', true)
+      let poetaStarted = false
+
+     targetEntity2.addEventListener('targetFound', () => {
+     if (!poetaStarted) {
+    poetaModel.setAttribute('visible', true)
+    
+    setTimeout(() => {
+      poetaModel.components['animation-mixer'].play()
+    }, 100)
+    poetaStarted = true
+    }
     })
 
       let tooltipTimer = null

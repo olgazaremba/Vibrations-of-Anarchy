@@ -126,17 +126,25 @@
       const poetaModel = document.getElementById('poeta')
 
       let poetaLoaded = false
-      let poetaStarted = false
+      let poetaTimer = null
 
       poetaModel.addEventListener('model-loaded', () => {
       poetaLoaded = true
     })
 
     targetEntity2.addEventListener('targetFound', () => {
-    if (!poetaStarted && poetaLoaded) {
+    if (!poetaLoaded) return
+
+    // cancel previous timer if exists
+    if (poetaTimer) clearTimeout(poetaTimer)
+
     poetaModel.setAttribute('visible', true)
-    poetaStarted = true
-    }
+
+    // hide after 20 seconds
+    poetaTimer = setTimeout(() => {
+    poetaModel.setAttribute('visible', false)
+    poetaTimer = null
+    }, 20000)
     })
 
       let tooltipTimer = null

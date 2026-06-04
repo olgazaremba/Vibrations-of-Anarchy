@@ -129,6 +129,14 @@
 
       let poetaLoaded = false
       let poetaTimer = null
+      let poetaVisible = false
+
+      const observer = new MutationObserver(() => {
+      if (poetaVisible) {
+      poetaModel.setAttribute('visible', true)
+    }
+    })
+      observer.observe(poetaModel, { attributes: true, attributeFilter: ['visible'] })
 
       poetaModel.addEventListener('model-loaded', () => {
         poetaLoaded = true
@@ -140,19 +148,15 @@
         // cancel previous timer if exists
         if (poetaTimer) clearTimeout(poetaTimer)
 
-        poetaModel.setAttribute('visible', true)
-
-        // hide after 20 seconds
+          poetaVisible = true
+          poetaModel.setAttribute('visible', true)
         poetaTimer = setTimeout(() => {
           poetaModel.setAttribute('visible', false)
           poetaTimer = null
         }, 20000)
       })
 
-      // intercept targetLost to prevent MindAR from hiding the entity automatically
-      targetEntity2.addEventListener('targetLost', (e) => {
-        e.stopPropagation()
-      })
+  
 
       let tooltipTimer = null
 

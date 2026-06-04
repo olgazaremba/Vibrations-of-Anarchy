@@ -35,6 +35,7 @@
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
+      <!-- Target 0: hammer scene -->
       <a-entity mindar-image-target="targetIndex: 0" id="target-entity">
 
         <a-gltf-model
@@ -85,17 +86,19 @@
 
       </a-entity>
 
-      <a-entity mindar-image-target="targetIndex: 1" id="target-entity-2">
-        <a-gltf-model
-          id="poeta"
-          src="#poeta-model"
-          position="0.5 -0.3 0"
-          rotation="0 90 -90"
-          scale="0.2 0.2 0.2"
-          visible="false"
-          animation-mixer="clip: Action.002; loop: repeat"
-        ></a-gltf-model>
-      </a-entity>
+      <!-- Target 1: trigger only, poeta model is outside this entity -->
+      <a-entity mindar-image-target="targetIndex: 1" id="target-entity-2"></a-entity>
+
+      <!-- Poeta model outside target entity so it persists after target is lost -->
+      <a-gltf-model
+        id="poeta"
+        src="#poeta-model"
+        position="0.5 -0.3 0"
+        rotation="0 90 -90"
+        scale="0.2 0.2 0.2"
+        visible="false"
+        animation-mixer="clip: Action.002; loop: repeat"
+      ></a-gltf-model>
 
     </a-scene>
 
@@ -129,23 +132,23 @@
       let poetaTimer = null
 
       poetaModel.addEventListener('model-loaded', () => {
-      poetaLoaded = true
-    })
+        poetaLoaded = true
+      })
 
-    targetEntity2.addEventListener('targetFound', () => {
-    if (!poetaLoaded) return
+      targetEntity2.addEventListener('targetFound', () => {
+        if (!poetaLoaded) return
 
-    // cancel previous timer if exists
-    if (poetaTimer) clearTimeout(poetaTimer)
+        // cancel previous timer if exists
+        if (poetaTimer) clearTimeout(poetaTimer)
 
-    poetaModel.setAttribute('visible', true)
+        poetaModel.setAttribute('visible', true)
 
-    // hide after 20 seconds
-    poetaTimer = setTimeout(() => {
-    poetaModel.setAttribute('visible', false)
-    poetaTimer = null
-    }, 20000)
-    })
+        // hide after 20 seconds
+        poetaTimer = setTimeout(() => {
+          poetaModel.setAttribute('visible', false)
+          poetaTimer = null
+        }, 20000)
+      })
 
       let tooltipTimer = null
 
@@ -154,19 +157,19 @@
         tooltipImg.setAttribute('visible', false)
         tooltipImg.removeAttribute('animation__pulse')
         if (tooltipTimer) {
-        clearTimeout(tooltipTimer)
-        tooltipTimer = null
+          clearTimeout(tooltipTimer)
+          tooltipTimer = null
         }
       })
 
       targetEntity.addEventListener('targetFound', () => {
         if (musicStarted) lyreMusic.play()
         tooltipTimer = setTimeout(() => {
-        tooltipImg.setAttribute('visible', true)
-        tooltipImg.setAttribute('animation__pulse',
-          'property: position; from: 0 0 0.3; to: 0 0 0.45; dur: 800; loop: true; dir: alternate; easing: easeInOutSine')
+          tooltipImg.setAttribute('visible', true)
+          tooltipImg.setAttribute('animation__pulse',
+            'property: position; from: 0 0 0.3; to: 0 0 0.45; dur: 800; loop: true; dir: alternate; easing: easeInOutSine')
         }, 5000)
-        })
+      })
 
       document.addEventListener('click', function () {
         if (!musicStarted) {

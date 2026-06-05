@@ -14,7 +14,7 @@
   </head>
   <body>
     <a-scene
-      mindar-image="imageTargetSrc: targets.mind; autoStart: true; filterMinCF: 0.05; filterBeta: 0.1;"
+      mindar-image="imageTargetSrc: targets.mind; autoStart: true; filterMinCF: 0.001; filterBeta: 0.001;"
       color-space="sRGB"
       vr-mode-ui="enabled: false"
       device-orientation-permission-ui="enabled: false"
@@ -50,31 +50,24 @@
         <a-image id="p1" src="#phrase1"
           position="-0.22 0.26 0.05" width="0.405" height="0.0599"
           scale="0.001 0.001 1" visible="false"></a-image>
-
         <a-image id="p2" src="#phrase2"
           position="0.22 0.26 0.05" width="0.405" height="0.0578"
           scale="0.001 0.001 1" visible="false"></a-image>
-
         <a-image id="p3" src="#phrase3"
           position="-0.22 0.14 0.05" width="0.405" height="0.0559"
           scale="0.001 0.001 1" visible="false"></a-image>
-
         <a-image id="p4" src="#phrase4"
           position="0.22 0.14 0.05" width="0.405" height="0.0517"
           scale="0.001 0.001 1" visible="false"></a-image>
-
         <a-image id="p5" src="#phrase5"
           position="-0.22 -0.15 0.05" width="0.272" height="0.0853"
           scale="0.001 0.001 1" visible="false"></a-image>
-
         <a-image id="p6" src="#phrase6"
           position="0.22 -0.15 0.05" width="0.312" height="0.0601"
           scale="0.001 0.001 1" visible="false"></a-image>
-
         <a-image id="p7" src="#phrase7"
           position="-0.22 -0.25 0.05" width="0.369" height="0.057"
           scale="0.001 0.001 1" visible="false"></a-image>
-
         <a-image id="p8" src="#phrase8"
           position="0.22 -0.25 0.05" width="0.369" height="0.0621"
           scale="0.001 0.001 1" visible="false"></a-image>
@@ -105,20 +98,15 @@
       const hammerSound = new Audio('sounds/hammer.mp3')
       const lyreMusic = new Audio('sounds/lyre.mp3')
       const poetaMusic = new Audio('sounds/poema.mp3')
-      const poetaMusic = new Audio('sounds/poema.mp3')
-
-    // unlock audio on first any touch
-    let audioUnlocked = false
-    document.addEventListener('touchstart', function unlockAudio() {
-  poetaMusic.play().then(() => {
-    poetaMusic.pause()
-    poetaMusic.currentTime = 0
-    audioUnlocked = true
-    }).catch(() => {})
-    }, { once: true })
       lyreMusic.loop = true
       let musicStarted = false
       let hammerVisible = false
+
+      // unlock both audio files on first touch (iOS requirement)
+      document.addEventListener('touchstart', function() {
+        lyreMusic.play().then(() => { lyreMusic.pause(); lyreMusic.currentTime = 0 }).catch(() => {})
+        poetaMusic.play().then(() => { poetaMusic.pause(); poetaMusic.currentTime = 0 }).catch(() => {})
+      }, { once: true })
 
       const phrases = [
         { el: document.getElementById('p1'), finalPos: '-0.22 0.26 0.05' },
@@ -142,21 +130,21 @@
       let poetaStarted = false
 
       poetaModel.addEventListener('model-loaded', () => {
-      poetaLoaded = true
-    })
+        poetaLoaded = true
+      })
 
-    targetEntity2.addEventListener('targetFound', () => {
-    if (!poetaStarted && poetaLoaded) {
-    poetaModel.setAttribute('visible', true)
-    poetaStarted = true
-    poetaMusic.play()
-    }
-    })
+      targetEntity2.addEventListener('targetFound', () => {
+        if (!poetaStarted && poetaLoaded) {
+          poetaModel.setAttribute('visible', true)
+          poetaStarted = true
+          poetaMusic.play()
+        }
+      })
 
-    targetEntity2.addEventListener('targetLost', () => {
-    poetaMusic.pause()
-    poetaMusic.currentTime = 0
-    })
+      targetEntity2.addEventListener('targetLost', () => {
+        poetaMusic.pause()
+        poetaMusic.currentTime = 0
+      })
 
       let tooltipTimer = null
 
@@ -166,8 +154,8 @@
         tooltipImg.setAttribute('visible', false)
         tooltipImg.removeAttribute('animation__pulse')
         if (tooltipTimer) {
-        clearTimeout(tooltipTimer)
-        tooltipTimer = null
+          clearTimeout(tooltipTimer)
+          tooltipTimer = null
         }
       })
 
@@ -175,11 +163,11 @@
         hammerVisible = true
         if (musicStarted) lyreMusic.play()
         tooltipTimer = setTimeout(() => {
-        tooltipImg.setAttribute('visible', true)
-        tooltipImg.setAttribute('animation__pulse',
-          'property: position; from: 0 0 0.3; to: 0 0 0.45; dur: 800; loop: true; dir: alternate; easing: easeInOutSine')
+          tooltipImg.setAttribute('visible', true)
+          tooltipImg.setAttribute('animation__pulse',
+            'property: position; from: 0 0 0.3; to: 0 0 0.45; dur: 800; loop: true; dir: alternate; easing: easeInOutSine')
         }, 5000)
-        })
+      })
 
       document.addEventListener('click', function () {
         if (!hammerVisible) return

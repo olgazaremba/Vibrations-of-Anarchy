@@ -78,13 +78,14 @@
 
       </a-entity>
 
+      <!-- ИЗМЕНЕНИЕ 1: rotation изменён с "0 0 -90" на "0 90 0" — поэт смотрит влево -->
       <a-entity mindar-image-target="targetIndex: 1" id="target-entity-2">
         <a-gltf-model
           id="poeta"
           src="#poeta-model"
           position="0.5 -0.3 0"
-          rotation="0 0 -90"
-          scale="-1 1 1"
+          rotation="0 90 0"
+          scale="-0.8 0.8 0.8"
           visible="false"
           animation-mixer="clip: Action.002; loop: repeat"
         ></a-gltf-model>
@@ -97,12 +98,13 @@
       const tooltipImg = document.getElementById('tooltip-img')
       const hammerSound = new Audio('sounds/hammer.mp3')
       const lyreMusic = new Audio('sounds/lyre.mp3')
+      // ИЗМЕНЕНИЕ 2: poetaMusic объявлена отдельно и НЕ связана со сценой молотка
       const poetaMusic = new Audio('sounds/poema.mp3')
       lyreMusic.loop = true
       let musicStarted = false
       let hammerVisible = false
 
-      // unlock both audio files on first touch (iOS requirement)
+      // unlock audio on first touch (iOS requirement)
       document.addEventListener('touchstart', function() {
         lyreMusic.play().then(() => { lyreMusic.pause(); lyreMusic.currentTime = 0 }).catch(() => {})
         poetaMusic.play().then(() => { poetaMusic.pause(); poetaMusic.currentTime = 0 }).catch(() => {})
@@ -133,12 +135,13 @@
         poetaLoaded = true
       })
 
+      // ИЗМЕНЕНИЕ 2: сцена поэта — только poetaMusic, lyre не трогаем
       targetEntity2.addEventListener('targetFound', () => {
         if (!poetaStarted && poetaLoaded) {
           poetaModel.setAttribute('visible', true)
           poetaStarted = true
-          poetaMusic.play()
         }
+        poetaMusic.play()
       })
 
       targetEntity2.addEventListener('targetLost', () => {
@@ -148,6 +151,7 @@
 
       let tooltipTimer = null
 
+      // Сцена молотка — только lyreMusic, poetaMusic не трогаем
       targetEntity.addEventListener('targetLost', () => {
         hammerVisible = false
         lyreMusic.pause()

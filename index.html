@@ -91,7 +91,7 @@
           src="#poeta-model"
           position="0.5 -0.3 0"
           rotation="0 90 -90"
-          scale="0.2 0.2 0.2"
+          scale="0.5 0.5 0.5"
           visible="false"
           animation-mixer="clip: Action.002; loop: repeat"
         ></a-gltf-model>
@@ -106,6 +106,7 @@
       const lyreMusic = new Audio('sounds/lyre.mp3')
       lyreMusic.loop = true
       let musicStarted = false
+      let hammerVisible = false
 
       const phrases = [
         { el: document.getElementById('p1'), finalPos: '-0.22 0.26 0.05' },
@@ -142,6 +143,7 @@
       let tooltipTimer = null
 
       targetEntity.addEventListener('targetLost', () => {
+        hammerVisible = false
         lyreMusic.pause()
         tooltipImg.setAttribute('visible', false)
         tooltipImg.removeAttribute('animation__pulse')
@@ -152,6 +154,7 @@
       })
 
       targetEntity.addEventListener('targetFound', () => {
+        hammerVisible = true
         if (musicStarted) lyreMusic.play()
         tooltipTimer = setTimeout(() => {
         tooltipImg.setAttribute('visible', true)
@@ -161,6 +164,7 @@
         })
 
       document.addEventListener('click', function () {
+        if (!hammerVisible) return
         if (!musicStarted) {
           lyreMusic.play()
           musicStarted = true

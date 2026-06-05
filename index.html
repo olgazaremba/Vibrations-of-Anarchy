@@ -14,7 +14,7 @@
   </head>
   <body>
     <a-scene
-      mindar-image="imageTargetSrc: targets.mind; autoStart: true; filterMinCF: 0.1; filterBeta: 10;"
+      mindar-image="imageTargetSrc: targets.mind; autoStart: true; filterMinCF: 0.05; filterBeta: 0.1;"
       color-space="sRGB"
       vr-mode-ui="enabled: false"
       device-orientation-permission-ui="enabled: false"
@@ -90,7 +90,7 @@
           id="poeta"
           src="#poeta-model"
           position="0.5 -0.3 0"
-          rotation="0 -90 -90"
+          rotation="0 0 -90"
           scale="-1 1 1"
           visible="false"
           animation-mixer="clip: Action.002; loop: repeat"
@@ -105,6 +105,17 @@
       const hammerSound = new Audio('sounds/hammer.mp3')
       const lyreMusic = new Audio('sounds/lyre.mp3')
       const poetaMusic = new Audio('sounds/poema.mp3')
+      const poetaMusic = new Audio('sounds/poema.mp3')
+
+    // unlock audio on first any touch
+    let audioUnlocked = false
+    document.addEventListener('touchstart', function unlockAudio() {
+  poetaMusic.play().then(() => {
+    poetaMusic.pause()
+    poetaMusic.currentTime = 0
+    audioUnlocked = true
+    }).catch(() => {})
+    }, { once: true })
       lyreMusic.loop = true
       let musicStarted = false
       let hammerVisible = false

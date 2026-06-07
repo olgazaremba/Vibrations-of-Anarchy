@@ -132,6 +132,7 @@
       })
 
       targetEntity2.addEventListener('targetFound', () => {
+        hammerVisible = false
         if (poetaLoaded) {
           poetaModel.setAttribute('visible', true)
           poetaMusic.currentTime = 0
@@ -164,7 +165,7 @@
           tooltipImg.setAttribute('visible', true)
           tooltipImg.setAttribute('animation__pulse',
             'property: position; from: 0 0 0.3; to: 0 0 0.45; dur: 800; loop: true; dir: alternate; easing: easeInOutSine')
-        }, 5000)
+        }, 2000)
       })
 
       document.addEventListener('click', function () {

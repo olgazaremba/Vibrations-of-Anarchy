@@ -83,7 +83,7 @@
           id="poeta"
           src="#poeta-model"
           position="0.5 -0.3 0"
-          rotation="0 0 -180"
+          rotation="90 0 -180"
           scale="-0.8 0.8 0.8"
           visible="false"
           animation-mixer="clip: Action.002; loop: repeat"
@@ -104,7 +104,7 @@
 
       document.addEventListener('touchstart', function() {
         lyreMusic.play().then(() => { lyreMusic.pause(); lyreMusic.currentTime = 0 }).catch(() => {})
-        poetaMusic.play().then(() => { poetaMusic.pause(); poetaMusic.currentTime = 0 }).catch(() => {})
+        poetaMusic.load()
       }, { once: true })
 
       const phrases = [

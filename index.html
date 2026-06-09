@@ -7,12 +7,58 @@
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <link rel="preload" href="scene tile/PoetaCarpinteiro.gltf" as="fetch" crossorigin="anonymous">
     <style>
       * { margin: 0; padding: 0; }
       body { overflow: hidden; }
+      #poeta-overlay {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 10;
+      display: none;
+      pointer-events: none;
+      background: transparent;
+      }
+      #poeta-viewer {
+      width: 100vw;
+      height: 100vh;
+      background: transparent;
+      --poster-color: transparent;
+      }
+      model-viewer::part(default-progress-bar) {
+      display: none;
+      }
+      model-viewer::part(play-button) {
+      display: none;
+      }
+      model-viewer::part(poster) {
+      display: none;
+      }
+      .mindar-ui-scanning.hidden-scanning {
+      display: none !important;
+      }
     </style>
   </head>
   <body>
+      <div id="poeta-overlay" style="display:none">
+      <model-viewer
+      id="poeta-viewer"
+      src="scene tile/PoetaCarpinteiro.gltf"
+      animation-name="Action.002"
+      autoplay
+      camera-controls="false"
+      interaction-prompt="none"
+      disable-zoom
+      disable-pan
+      shadow-intensity="0"
+      exposure="0.2"
+      camera-orbit="0deg 90deg 18m"
+      orientation="0deg 0deg 180deg"
+      ></model-viewer>
+    </div>
     <a-scene
       mindar-image="imageTargetSrc: targets.mind; autoStart: true; filterMinCF: 0.001; filterBeta: 0.001;"
       color-space="sRGB"
@@ -21,7 +67,6 @@
     >
       <a-assets>
         <a-asset-item id="hammer-model" src="cross_pein_hammer_4k.gltf"></a-asset-item>
-        <a-asset-item id="poeta-model" src="scene tile/PoetaCarpinteiro.gltf"></a-asset-item>
         <img id="phrase1" src="images/phrase1.png" crossorigin="anonymous" />
         <img id="phrase2" src="images/phrase2.png" crossorigin="anonymous" />
         <img id="phrase3" src="images/phrase3.png" crossorigin="anonymous" />
@@ -78,17 +123,7 @@
 
       </a-entity>
 
-      <a-entity mindar-image-target="targetIndex: 1" id="target-entity-2">
-        <a-gltf-model
-          id="poeta"
-          src="#poeta-model"
-          position="-0.2 0.7 1"
-          rotation="90 0 -180"
-          scale="-0.5 0.5 0.5"
-          visible="false"
-          animation-mixer="clip: Action.002; loop: repeat"
-        ></a-gltf-model>
-      </a-entity>
+      <a-entity mindar-image-target="targetIndex: 1" id="target-entity-2"></a-entity>
 
     </a-scene>
 
@@ -104,7 +139,6 @@
 
       document.addEventListener('touchstart', function() {
         lyreMusic.play().then(() => { lyreMusic.pause(); lyreMusic.currentTime = 0 }).catch(() => {})
-        poetaMusic.load()
       }, { once: true })
 
       const phrases = [
@@ -123,27 +157,34 @@
 
       const targetEntity = document.getElementById('target-entity')
       const targetEntity2 = document.getElementById('target-entity-2')
-      const poetaModel = document.getElementById('poeta')
+      const poetaOverlay = document.getElementById('poeta-overlay')
 
-      let poetaLoaded = false
+    let poetaTimer = null
+    let poetaStarted = false
 
-      poetaModel.addEventListener('model-loaded', () => {
-        poetaLoaded = true
-      })
+    targetEntity2.addEventListener('targetFound', () => {
+    if (poetaStarted) return
+    poetaStarted = true
 
-      targetEntity2.addEventListener('targetFound', () => {
-        hammerVisible = false
-        if (poetaLoaded) {
-          poetaModel.setAttribute('visible', true)
-          poetaMusic.currentTime = 0
-          poetaMusic.play()
-        }
-      })
+    hammerVisible = false
+    poetaOverlay.style.display = 'block'
+    document.querySelector('.mindar-ui-scanning')?.classList.add('hidden-scanning')
+    poetaMusic.currentTime = 0
+    poetaMusic.play()
 
-      targetEntity2.addEventListener('targetLost', () => {
-        poetaMusic.pause()
-        poetaMusic.currentTime = 0
-      })
+    poetaTimer = setTimeout(() => {
+    poetaOverlay.style.display = 'none'
+    poetaMusic.pause()
+    poetaMusic.currentTime = 0
+    poetaTimer = null
+    poetaStarted = false
+    document.querySelector('.mindar-ui-scanning')?.classList.remove('hidden-scanning')
+    }, 30000)
+    })
+
+    targetEntity2.addEventListener('targetLost', () => {
+    // Intentionally empty: overlay remains visible after target is lost.
+    })
 
       let tooltipTimer = null
 

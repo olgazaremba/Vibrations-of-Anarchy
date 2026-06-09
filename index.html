@@ -28,6 +28,12 @@
       background: transparent;
       --poster-color: transparent;
       }
+      model-viewer::part(default-progress-bar) {
+      display: none;
+      }
+      model-viewer::part(play-button) {
+      display: none;
+      }
       .mindar-ui-scanning.hidden-scanning {
       display: none !important;
       }
@@ -45,7 +51,8 @@
       disable-zoom
       disable-pan
       shadow-intensity="0"
-      camera-orbit="0deg 75deg 7m"
+      exposure="0.5"
+      camera-orbit="0deg 75deg 15m"
       orientation="0deg 0deg 180deg"
       ></model-viewer>
     </div>

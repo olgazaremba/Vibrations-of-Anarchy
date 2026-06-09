@@ -33,12 +33,13 @@
     </style>
   </head>
   <body>
-      <div id="poeta-overlay">
+      <div id="poeta-overlay" style="display:none; position:fixed; inset:0; width:100vw; height:100vh; z-index:10; pointer-events:none; background:transparent;">
       <model-viewer
       id="poeta-viewer"
       src="scene tile/PoetaCarpinteiro.gltf"
       animation-name="Action.002"
       autoplay
+      reveal="manual"
       camera-controls="false"
       interaction-prompt="none"
       disable-zoom
@@ -148,21 +149,28 @@
       const targetEntity = document.getElementById('target-entity')
       const targetEntity2 = document.getElementById('target-entity-2')
       const poetaOverlay = document.getElementById('poeta-overlay')
+      const poetaViewer = document.getElementById('poeta-viewer')
+      poetaViewer.dismissPoster()
 
     let poetaTimer = null
+    let poetaStarted = false
+
     targetEntity2.addEventListener('targetFound', () => {
+    if (poetaStarted) return
+    poetaStarted = true
+
     hammerVisible = false
     poetaOverlay.style.display = 'block'
     document.querySelector('.mindar-ui-scanning')?.classList.add('hidden-scanning')
     poetaMusic.currentTime = 0
     poetaMusic.play()
 
-    if (poetaTimer) clearTimeout(poetaTimer)
     poetaTimer = setTimeout(() => {
     poetaOverlay.style.display = 'none'
     poetaMusic.pause()
     poetaMusic.currentTime = 0
     poetaTimer = null
+    poetaStarted = false
     document.querySelector('.mindar-ui-scanning')?.classList.remove('hidden-scanning')
     }, 30000)
     })

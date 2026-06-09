@@ -1,264 +1,247 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AR Book</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>AR Book — Model Viewer Overlay</title>
+
+    <!-- A-Frame and MindAR are used only to open the camera and detect image targets. -->
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
+
+    <!-- model-viewer is used to display animated 3D models as a transparent HTML overlay. -->
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
     <style>
-      * { margin: 0; padding: 0; }
-      body { overflow: hidden; }
-      #poeta-overlay {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 10;
-      display: none;
-      pointer-events: none;
-      background: transparent;
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
       }
-      #poeta-viewer {
-      width: 100vw;
-      height: 100vh;
-      background: transparent;
-      --poster-color: transparent;
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: transparent;
+        font-family: Arial, Helvetica, sans-serif;
       }
-      .mindar-ui-scanning.hidden-scanning {
-      display: none !important;
+
+      /* MindAR stays behind the overlay. This is the layer that opens the camera feed. */
+      a-scene {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 0;
+      }
+
+      /* Transparent layer used to display the selected 3D model over the camera feed. */
+      #model-overlay {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 10;
+        display: none;
+        pointer-events: none;
+        background: transparent;
+      }
+
+      #ar-model {
+        width: 100vw;
+        height: 100vh;
+        background: transparent;
+        --poster-color: transparent;
+      }
+
+      /* Initial instruction shown before a target is detected. */
+      #scan-hint {
+        position: fixed;
+        left: 50%;
+        top: 24px;
+        transform: translateX(-50%);
+        z-index: 20;
+        max-width: calc(100vw - 32px);
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.55);
+        color: white;
+        font-size: 14px;
+        text-align: center;
+        pointer-events: none;
+      }
+
+      #scan-hint.hidden {
+        display: none;
       }
     </style>
   </head>
+
   <body>
-      <div id="poeta-overlay" style="display:none; position:fixed; inset:0; width:100vw; height:100vh; z-index:10; pointer-events:none; background:transparent;">
+    <div id="scan-hint">Point the camera at a target.</div>
+
+    <!-- The 3D model is displayed over the camera feed. The src is set only after target detection. -->
+    <div id="model-overlay">
       <model-viewer
-      id="poeta-viewer"
-      src="scene tile/PoetaCarpinteiro.gltf"
-      animation-name="Action.002"
-      autoplay
-      reveal="manual"
-      camera-controls="false"
-      interaction-prompt="none"
-      disable-zoom
-      disable-pan
-      shadow-intensity="0"
-      camera-orbit="0deg 75deg 4m"
-      orientation="0deg 0deg 180deg"
+        id="ar-model"
+        src=""
+        autoplay
+        camera-controls="false"
+        interaction-prompt="none"
+        disable-zoom
+        disable-pan
+        shadow-intensity="0"
+        exposure="1"
+        reveal="auto"
       ></model-viewer>
     </div>
+
+    <!-- MindAR opens the camera and detects targets. The targets are empty and work only as triggers. -->
     <a-scene
-      mindar-image="imageTargetSrc: targets.mind; autoStart: true; filterMinCF: 0.001; filterBeta: 0.001;"
+      mindar-image="imageTargetSrc: targets.mind; autoStart: true; filterMinCF: 0.001; filterBeta: 0.001; uiScanning: no;"
       color-space="sRGB"
       vr-mode-ui="enabled: false"
       device-orientation-permission-ui="enabled: false"
+      renderer="alpha: true; antialias: true; colorManagement: true"
     >
       <a-assets>
         <a-asset-item id="hammer-model" src="cross_pein_hammer_4k.gltf"></a-asset-item>
-        <img id="phrase1" src="images/phrase1.png" crossorigin="anonymous" />
-        <img id="phrase2" src="images/phrase2.png" crossorigin="anonymous" />
-        <img id="phrase3" src="images/phrase3.png" crossorigin="anonymous" />
-        <img id="phrase4" src="images/phrase4.png" crossorigin="anonymous" />
-        <img id="phrase5" src="images/phrase5.png" crossorigin="anonymous" />
-        <img id="phrase6" src="images/phrase6.png" crossorigin="anonymous" />
-        <img id="phrase7" src="images/phrase7.png" crossorigin="anonymous" />
-        <img id="phrase8" src="images/phrase8.png" crossorigin="anonymous" />
-        <img id="tooltip" src="images/tooltip.png" crossorigin="anonymous" />
+        <a-asset-item id="poeta-model" src="scene tile/PoetaCarpinteiro.gltf"></a-asset-item>
       </a-assets>
 
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+      <a-camera id="camera" position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <a-entity mindar-image-target="targetIndex: 0" id="target-entity">
-
-        <a-gltf-model
-          id="hammer"
-          src="#hammer-model"
-          position="0.1 0.05 0.1"
-          rotation="90 180 -135"
-          scale="3 3 3"
-          animation__hit="property: rotation; to: 90 180 -105; dur: 180; startEvents: hit; easing: easeInQuad"
-          animation__return="property: rotation; to: 90 180 -135; dur: 180; startEvents: return; easing: easeOutQuad"
-        ></a-gltf-model>
-
-        <a-image id="p1" src="#phrase1"
-          position="-0.22 0.26 0.05" width="0.405" height="0.0599"
-          scale="0.001 0.001 1" visible="false"></a-image>
-        <a-image id="p2" src="#phrase2"
-          position="0.22 0.26 0.05" width="0.405" height="0.0578"
-          scale="0.001 0.001 1" visible="false"></a-image>
-        <a-image id="p3" src="#phrase3"
-          position="-0.22 0.14 0.05" width="0.405" height="0.0559"
-          scale="0.001 0.001 1" visible="false"></a-image>
-        <a-image id="p4" src="#phrase4"
-          position="0.22 0.14 0.05" width="0.405" height="0.0517"
-          scale="0.001 0.001 1" visible="false"></a-image>
-        <a-image id="p5" src="#phrase5"
-          position="-0.22 -0.15 0.05" width="0.272" height="0.0853"
-          scale="0.001 0.001 1" visible="false"></a-image>
-        <a-image id="p6" src="#phrase6"
-          position="0.22 -0.15 0.05" width="0.312" height="0.0601"
-          scale="0.001 0.001 1" visible="false"></a-image>
-        <a-image id="p7" src="#phrase7"
-          position="-0.22 -0.25 0.05" width="0.369" height="0.057"
-          scale="0.001 0.001 1" visible="false"></a-image>
-        <a-image id="p8" src="#phrase8"
-          position="0.22 -0.25 0.05" width="0.369" height="0.0621"
-          scale="0.001 0.001 1" visible="false"></a-image>
-
-        <a-image id="tooltip-img" src="#tooltip"
-          position="0 0 0.3" width="0.3" height="0.3"
-          visible="false"></a-image>
-
-      </a-entity>
-
-      <a-entity mindar-image-target="targetIndex: 1" id="target-entity-2"></a-entity>
-
+      <a-entity id="target-entity" mindar-image-target="targetIndex: 0"></a-entity>
+      <a-entity id="target-entity-2" mindar-image-target="targetIndex: 1"></a-entity>
     </a-scene>
 
     <script>
-      const hammer = document.getElementById('hammer')
-      const tooltipImg = document.getElementById('tooltip-img')
-      const hammerSound = new Audio('sounds/hammer.mp3')
-      const lyreMusic = new Audio('sounds/lyre.mp3')
-      const poetaMusic = new Audio('sounds/poema.mp3')
-      lyreMusic.loop = true
-      let musicStarted = false
-      let hammerVisible = false
-
-      document.addEventListener('touchstart', function() {
-        lyreMusic.play().then(() => { lyreMusic.pause(); lyreMusic.currentTime = 0 }).catch(() => {})
-        poetaMusic.load()
-      }, { once: true })
-
-      const phrases = [
-        { el: document.getElementById('p1'), finalPos: '-0.22 0.26 0.05' },
-        { el: document.getElementById('p2'), finalPos: '0.22 0.26 0.05' },
-        { el: document.getElementById('p3'), finalPos: '-0.22 0.14 0.05' },
-        { el: document.getElementById('p4'), finalPos: '0.22 0.14 0.05' },
-        { el: document.getElementById('p5'), finalPos: '-0.22 -0.15 0.05' },
-        { el: document.getElementById('p6'), finalPos: '0.22 -0.15 0.05' },
-        { el: document.getElementById('p7'), finalPos: '-0.22 -0.25 0.05' },
-        { el: document.getElementById('p8'), finalPos: '0.22 -0.25 0.05' },
-      ]
-
-      let animating = false
-      let step = 0
+      const modelOverlay = document.getElementById('model-overlay')
+      const arModel = document.getElementById('ar-model')
+      const scanHint = document.getElementById('scan-hint')
 
       const targetEntity = document.getElementById('target-entity')
       const targetEntity2 = document.getElementById('target-entity-2')
-      const poetaOverlay = document.getElementById('poeta-overlay')
-      const poetaViewer = document.getElementById('poeta-viewer')
-      poetaViewer.dismissPoster()
 
-    let poetaTimer = null
-    let poetaStarted = false
+      const lyreMusic = new Audio('sounds/lyre.mp3')
+      const poetaMusic = new Audio('sounds/poema.mp3')
 
-    targetEntity2.addEventListener('targetFound', () => {
-    if (poetaStarted) return
-    poetaStarted = true
+      lyreMusic.loop = true
+      poetaMusic.loop = false
+      lyreMusic.preload = 'auto'
+      poetaMusic.preload = 'auto'
 
-    hammerVisible = false
-    poetaOverlay.style.display = 'block'
-    document.querySelector('.mindar-ui-scanning')?.classList.add('hidden-scanning')
-    poetaMusic.currentTime = 0
-    poetaMusic.play()
+      let currentAudio = null
+      let currentScene = null
 
-    poetaTimer = setTimeout(() => {
-    poetaOverlay.style.display = 'none'
-    poetaMusic.pause()
-    poetaMusic.currentTime = 0
-    poetaTimer = null
-    poetaStarted = false
-    document.querySelector('.mindar-ui-scanning')?.classList.remove('hidden-scanning')
-    }, 30000)
-    })
+      /*
+        This value defines the default model orientation.
+        The current value rotates the model 180 degrees around the Z axis.
+      */
+      const MODEL_VERTICAL_ORIENTATION = '0deg 0deg 180deg'
 
-    targetEntity2.addEventListener('targetLost', () => {
-    // Intentionally empty: overlay remains visible after target is lost.
-    })
-
-      let tooltipTimer = null
-
-      targetEntity.addEventListener('targetLost', () => {
-        hammerVisible = false
-        lyreMusic.pause()
-        tooltipImg.setAttribute('visible', false)
-        tooltipImg.removeAttribute('animation__pulse')
-        if (tooltipTimer) {
-          clearTimeout(tooltipTimer)
-          tooltipTimer = null
+      function stopCurrentAudio() {
+        if (currentAudio) {
+          currentAudio.pause()
+          currentAudio.currentTime = 0
+          currentAudio = null
         }
-      })
+      }
+
+      function playAudioOnTarget(audio) {
+        stopCurrentAudio()
+        currentAudio = audio
+        currentAudio.currentTime = 0
+
+        const playPromise = currentAudio.play()
+
+        if (playPromise !== undefined) {
+          playPromise.catch((error) => {
+            /*
+              Some browsers block audio playback without a previous user gesture.
+              The app still tries to play the audio automatically when the target is detected,
+              as requested. If blocked, the error is logged for debugging.
+            */
+            console.warn('Audio playback was blocked by the browser:', error)
+          })
+        }
+      }
+
+      function showModel(options) {
+        const {
+          sceneName,
+          src,
+          animationName,
+          audio,
+          orientation = MODEL_VERTICAL_ORIENTATION,
+          scale = '1 1 1',
+          cameraOrbit = '0deg 75deg 2.5m'
+        } = options
+
+        currentScene = sceneName
+        scanHint.classList.add('hidden')
+        modelOverlay.style.display = 'block'
+
+        if (arModel.getAttribute('src') !== src) {
+          arModel.setAttribute('src', src)
+        }
+
+        arModel.setAttribute('orientation', orientation)
+        arModel.setAttribute('scale', scale)
+        arModel.setAttribute('camera-orbit', cameraOrbit)
+
+        if (animationName) {
+          arModel.setAttribute('animation-name', animationName)
+          arModel.setAttribute('autoplay', '')
+        } else {
+          arModel.removeAttribute('animation-name')
+          arModel.setAttribute('autoplay', '')
+        }
+
+        arModel.addEventListener('load', () => {
+          try {
+            arModel.play()
+          } catch (error) {
+            console.warn('The model animation could not be started:', error)
+          }
+        }, { once: true })
+
+        if (audio) {
+          playAudioOnTarget(audio)
+        }
+      }
 
       targetEntity.addEventListener('targetFound', () => {
-        hammerVisible = true
-        if (musicStarted) lyreMusic.play()
-        tooltipTimer = setTimeout(() => {
-          tooltipImg.setAttribute('visible', true)
-          tooltipImg.setAttribute('animation__pulse',
-            'property: position; from: 0 0 0.3; to: 0 0 0.45; dur: 800; loop: true; dir: alternate; easing: easeInOutSine')
-        }, 2000)
+        showModel({
+          sceneName: 'hammer',
+          src: 'cross_pein_hammer_4k.gltf',
+          audio: lyreMusic,
+          orientation: MODEL_VERTICAL_ORIENTATION,
+          scale: '1 1 1',
+          cameraOrbit: '0deg 75deg 2.5m'
+        })
       })
 
-      document.addEventListener('click', function () {
-        if (!hammerVisible) return
-        if (!musicStarted) {
-          lyreMusic.play()
-          musicStarted = true
-        }
+      targetEntity2.addEventListener('targetFound', () => {
+        showModel({
+          sceneName: 'poeta',
+          src: 'scene tile/PoetaCarpinteiro.gltf',
+          animationName: 'Action.002',
+          audio: poetaMusic,
+          orientation: MODEL_VERTICAL_ORIENTATION,
+          scale: '1 1 1',
+          cameraOrbit: '0deg 75deg 2.5m'
+        })
+      })
 
-        tooltipImg.setAttribute('visible', false)
-        tooltipImg.removeAttribute('animation__pulse')
+      targetEntity.addEventListener('targetLost', () => {
+        // Intentionally empty: the model remains visible after the target is lost.
+      })
 
-        if (animating || step >= phrases.length) return
-        animating = true
-
-        hammerSound.currentTime = 0
-        hammerSound.play()
-
-        hammer.emit('hit')
-
-        setTimeout(() => {
-          hammer.emit('return')
-
-          const phrase = phrases[step]
-          const el = phrase.el
-
-          el.setAttribute('visible', true)
-          el.setAttribute('position', '0 0 0.05')
-          el.setAttribute('scale', '0.1 0.1 1')
-
-          setTimeout(() => {
-            el.setAttribute('animation__grow',
-              'property: scale; from: 0.1 0.1 1; to: 1.5 1.5 1; dur: 700; easing: easeOutBack')
-          }, 50)
-
-          setTimeout(() => {
-            el.setAttribute('animation__shrink',
-              'property: scale; to: 1 1 1; dur: 500; easing: easeInOutQuad')
-            el.setAttribute('animation__move',
-              `property: position; to: ${phrase.finalPos}; dur: 800; easing: easeInOutQuad`)
-          }, 500)
-
-          setTimeout(() => {
-            animating = false
-            step++
-            tooltipImg.setAttribute('visible', true)
-            tooltipImg.setAttribute('animation__pulse',
-              'property: position; from: 0 0 0.3; to: 0 0 0.45; dur: 800; loop: true; dir: alternate; easing: easeInOutSine')
-
-            if (step >= phrases.length) {
-              tooltipImg.setAttribute('visible', false)
-              tooltipImg.removeAttribute('animation__pulse')
-              setTimeout(() => {
-                hammer.setAttribute('visible', false)
-              }, 600)
-            }
-          }, 1100)
-
-        }, 360)
+      targetEntity2.addEventListener('targetLost', () => {
+        // Intentionally empty: the model remains visible after the target is lost.
       })
     </script>
   </body>

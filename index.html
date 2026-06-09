@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <link rel="preload" href="scene tile/PoetaCarpinteiro.gltf" as="fetch" crossorigin="anonymous">
     <style>
       * { margin: 0; padding: 0; }
       body { overflow: hidden; }
@@ -33,13 +34,12 @@
     </style>
   </head>
   <body>
-      <div id="poeta-overlay" style="display:none; position:fixed; inset:0; width:100vw; height:100vh; z-index:10; pointer-events:none; background:transparent;">
+      <div id="poeta-overlay" style="display:none">
       <model-viewer
       id="poeta-viewer"
       src="scene tile/PoetaCarpinteiro.gltf"
       animation-name="Action.002"
       autoplay
-      reveal="manual"
       camera-controls="false"
       interaction-prompt="none"
       disable-zoom
@@ -57,7 +57,6 @@
     >
       <a-assets>
         <a-asset-item id="hammer-model" src="cross_pein_hammer_4k.gltf"></a-asset-item>
-        <a-asset-item id="poeta-preload" src="scene tile/PoetaCarpinteiro.gltf"></a-asset-item>
         <img id="phrase1" src="images/phrase1.png" crossorigin="anonymous" />
         <img id="phrase2" src="images/phrase2.png" crossorigin="anonymous" />
         <img id="phrase3" src="images/phrase3.png" crossorigin="anonymous" />
@@ -150,8 +149,6 @@
       const targetEntity = document.getElementById('target-entity')
       const targetEntity2 = document.getElementById('target-entity-2')
       const poetaOverlay = document.getElementById('poeta-overlay')
-      const poetaViewer = document.getElementById('poeta-viewer')
-      poetaViewer.dismissPoster()
 
     let poetaTimer = null
     let poetaStarted = false

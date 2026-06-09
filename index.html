@@ -27,6 +27,9 @@
       background: transparent;
       --poster-color: transparent;
       }
+      .mindar-ui-scanning.hidden-scanning {
+      display: none !important;
+      }
     </style>
   </head>
   <body>
@@ -41,7 +44,7 @@
       disable-zoom
       disable-pan
       shadow-intensity="0"
-      camera-orbit="0deg 75deg 2.5m"
+      camera-orbit="0deg 75deg 4m"
       orientation="0deg 0deg 180deg"
       ></model-viewer>
     </div>
@@ -146,11 +149,22 @@
       const targetEntity2 = document.getElementById('target-entity-2')
       const poetaOverlay = document.getElementById('poeta-overlay')
 
+    let poetaTimer = null
     targetEntity2.addEventListener('targetFound', () => {
     hammerVisible = false
     poetaOverlay.style.display = 'block'
+    document.querySelector('.mindar-ui-scanning')?.classList.add('hidden-scanning')
     poetaMusic.currentTime = 0
     poetaMusic.play()
+
+    if (poetaTimer) clearTimeout(poetaTimer)
+    poetaTimer = setTimeout(() => {
+    poetaOverlay.style.display = 'none'
+    poetaMusic.pause()
+    poetaMusic.currentTime = 0
+    poetaTimer = null
+    document.querySelector('.mindar-ui-scanning')?.classList.remove('hidden-scanning')
+    }, 30000)
     })
 
     targetEntity2.addEventListener('targetLost', () => {

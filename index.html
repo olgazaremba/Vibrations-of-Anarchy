@@ -78,18 +78,16 @@
 
       </a-entity>
 
-      <a-entity id="poeta-anchor">
-        <a-gltf-model
-        id="poeta"
-        src="#poeta-model"
-        rotation="90 0 -180"
-        scale="-0.4 0.4 0.4"
-        visible="false"
-        animation-mixer="clip: Action.002; loop: repeat"
-        ></a-gltf-model>
-      </a-entity>
-
       <a-entity mindar-image-target="targetIndex: 1" id="target-entity-2">
+        <a-gltf-model
+          id="poeta"
+          src="#poeta-model"
+          position="-0.2 0.5 1"
+          rotation="90 0 -180"
+          scale="-0.4 0.4 0.4"
+          visible="false"
+          animation-mixer="clip: Action.002; loop: repeat"
+        ></a-gltf-model>
       </a-entity>
 
     </a-scene>
@@ -122,72 +120,30 @@
 
       let animating = false
       let step = 0
-      
-      const scene = document.querySelector('a-scene')
+
       const targetEntity = document.getElementById('target-entity')
       const targetEntity2 = document.getElementById('target-entity-2')
-      
       const poetaModel = document.getElementById('poeta')
-      const poetaAnchor = document.getElementById('poeta-anchor')
-      
+
       let poetaLoaded = false
-      let poetaPlaced = false
-      let poetaTargetVisible = false
-      
+
       poetaModel.addEventListener('model-loaded', () => {
         poetaLoaded = true
+      })
 
-  console.log('Modelo do poeta carregado')
+      targetEntity2.addEventListener('targetFound', () => {
+        hammerVisible = false
+        if (poetaLoaded) {
+          poetaModel.setAttribute('visible', true)
+          poetaMusic.currentTime = 0
+          poetaMusic.play()
+        }
+      })
 
-  if (poetaTargetVisible && !poetaPlaced) {
-    placePoeta()
-  }
-})
-
-function placePoeta() {
-  if (!poetaLoaded) return
-  if (poetaPlaced) return
-
-  const worldPos = new THREE.Vector3()
-  const worldQuat = new THREE.Quaternion()
-
-  targetEntity2.object3D.getWorldPosition(worldPos)
-  targetEntity2.object3D.getWorldQuaternion(worldQuat)
-
-  poetaAnchor.object3D.position.copy(worldPos)
-  poetaAnchor.object3D.quaternion.copy(worldQuat)
-
-  poetaAnchor.object3D.updateMatrixWorld(true)
-
-  poetaModel.setAttribute('visible', true)
-
-  poetaPlaced = true
-
-  console.log('Poeta colocado')
-}
-
-targetEntity2.addEventListener('targetFound', () => {
-  console.log('TARGET 2 ENCONTRADO')
-
-  hammerVisible = false
-  poetaTargetVisible = true
-
-  if (!poetaPlaced) {
-    placePoeta()
-  }
-
-  poetaMusic.currentTime = 0
-  poetaMusic.play().catch(() => {})
-})
-
-targetEntity2.addEventListener('targetLost', () => {
-  console.log('TARGET 2 PERDIDO')
-
-  poetaTargetVisible = false
-
-  poetaMusic.pause()
-  poetaMusic.currentTime = 0
-})
+      targetEntity2.addEventListener('targetLost', () => {
+        poetaMusic.pause()
+        poetaMusic.currentTime = 0
+      })
 
       let tooltipTimer = null
 

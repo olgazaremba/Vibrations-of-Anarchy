@@ -71,7 +71,7 @@
 
     <div id="mindar-container"></div>
     <button id="btn-voltar" onclick="window.location.href='index.html'">← Voltar</button>
-    <div id="hint">Aponte a câmera para a imagem do livro</div>
+    <div id="hint">Aponte a câmera para o Azulejo</div>
 
     <script type="module">
       import * as THREE from 'three'
@@ -133,48 +133,43 @@
 
       // ── 5. Eventos ────────────────────────────────────────────────
       anchor.onTargetFound = () => {
-        console.log('TARGET FOUND ✅')
-        hint.style.opacity = '0'
-        poetaMusic.currentTime = 0
-        poetaMusic.play().catch(() => {})
+  console.log('TARGET FOUND ✅')
+  console.log('model existe?', !!model)
+  console.log('modelPlaced?', modelPlaced)
+  hint.style.opacity = '0'
+  poetaMusic.currentTime = 0
+  poetaMusic.play().catch(() => {})
 
-        if (!model) return
+  if (!model) {
+    console.log('modelo ainda não carregou')
+    return
+  }
 
-        if (!modelPlaced) {
-          // Primeira deteção — captura a pose mundial e fixa o modelo na cena
-          anchor.group.updateWorldMatrix(true, true)
-          model.updateWorldMatrix(true, true)
+  anchor.group.updateWorldMatrix(true, true)
+  model.updateWorldMatrix(true, true)
 
-          // Obtém posição e rotação mundiais do modelo neste momento
-          const worldPos = new THREE.Vector3()
-          const worldQuat = new THREE.Quaternion()
-          const worldScale = new THREE.Vector3()
-          model.matrixWorld.decompose(worldPos, worldQuat, worldScale)
+  const worldPos = new THREE.Vector3()
+  const worldQuat = new THREE.Quaternion()
+  const worldScale = new THREE.Vector3()
+  model.matrixWorld.decompose(worldPos, worldQuat, worldScale)
 
-          // Remove do anchor e adiciona diretamente à cena com a mesma pose
-          anchor.group.remove(model)
-          scene.add(model)
+  console.log('worldPos:', worldPos)
+  console.log('worldQuat:', worldQuat)
 
-          model.position.copy(worldPos)
-          model.quaternion.copy(worldQuat)
-          // mantém a escala original (a worldScale pode ter distorções do anchor)
-          model.scale.set(-0.4, 0.4, 0.4)
-          model.visible = true
-
-          modelPlaced = true
-          console.log('Modelo fixo no mundo ✅', worldPos)
-        } else {
-          // Já está no mundo — só garante visível
-          model.visible = true
-        }
-      }
-
-      anchor.onTargetLost = () => {
-        hint.style.opacity = '1'
-        poetaMusic.pause()
-        poetaMusic.currentTime = 0
-        // modelo permanece visível e fixo no mundo
-      }
+  if (!modelPlaced) {
+    anchor.group.remove(model)
+    scene.add(model)
+    model.position.copy(worldPos)
+    model.quaternion.copy(worldQuat)
+    model.scale.set(-0.4, 0.4, 0.4)
+    model.visible = true
+    modelPlaced = true
+    console.log('Modelo colocado na cena ✅')
+  } else {
+    model.visible = true
+    console.log('Modelo já estava na cena, tornado visível')
+  }
+}
 
       // ── 6. Start ──────────────────────────────────────────────────
       try {

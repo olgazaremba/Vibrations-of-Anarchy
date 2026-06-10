@@ -102,15 +102,43 @@
       // ── 3. Anchor ─────────────────────────────────────────────────
       const anchor = mindarThree.addAnchor(0)
 
-      // Cubo de teste vermelho
-      const cubo = new THREE.Mesh(
-        new THREE.BoxGeometry(0.1, 0.1, 0.1),
-        new THREE.MeshStandardMaterial({ color: 0xff0000 })
-      )
-      anchor.group.add(cubo)
-      console.log('Cubo adicionado ao anchor')
+      // ── 4. Modelo ─────────────────────────────────────────────────
+      const loader = new GLTFLoader()
+      loader.load(
+        'scene-tile/PoetaCarpinteiro.gltf',
+        (gltf) => {
+          console.log('Modelo carregado ✅')
+          console.log('Animações:', gltf.animations.map(a => a.name))
 
-      // ── 4. Eventos ────────────────────────────────────────────────
+          const model = gltf.scene
+          model.rotation.set(Math.PI / 2, 0, -Math.PI)
+          model.scale.set(-0.4, 0.4, 0.4)
+          model.position.set(0, 0, 0)
+          anchor.group.add(model)
+
+          if (gltf.animations?.length > 0) {
+            const mixer = new THREE.AnimationMixer(model)
+            const clip = THREE.AnimationClip.findByName(gltf.animations, 'Action.002')
+              || gltf.animations[0]
+            mixer.clipAction(clip).play()
+
+            const clock = new THREE.Clock()
+            renderer.setAnimationLoop(() => {
+              mixer.update(clock.getDelta())
+              renderer.render(scene, camera)
+            })
+          } else {
+            // sem animação — loop simples
+            renderer.setAnimationLoop(() => {
+              renderer.render(scene, camera)
+            })
+          }
+        },
+        undefined,
+        (err) => console.error('Erro modelo:', err)
+      )
+
+      // ── 5. Eventos ────────────────────────────────────────────────
       anchor.onTargetFound = () => {
         console.log('TARGET FOUND ✅')
         hint.style.opacity = '0'
@@ -125,23 +153,13 @@
         poetaMusic.currentTime = 0
       }
 
-      // ── 5. Start ──────────────────────────────────────────────────
-      console.log('A iniciar MindAR...')
+      // ── 6. Start ──────────────────────────────────────────────────
       try {
         await mindarThree.start()
         console.log('MindAR iniciado ✅')
       } catch(e) {
         console.error('Erro no start:', e)
       }
-
-      setInterval(() => {
-        console.log('anchor visible:', anchor.group.visible, '| filhos:', anchor.group.children.length)
-      }, 2000)
-
-      const clock = new THREE.Clock()
-      renderer.setAnimationLoop(() => {
-        renderer.render(scene, camera)
-      })
 
     </script>
   </body>

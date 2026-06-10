@@ -10,28 +10,29 @@
     <style>
       * { margin: 0; padding: 0; }
       body { overflow: hidden; }
+
+      #btn-poeta {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 9999;
+        padding: 14px 22px;
+        background: rgba(0,0,0,0.72);
+        color: #fff;
+        font-size: 16px;
+        font-family: sans-serif;
+        border: 1.5px solid rgba(255,255,255,0.35);
+        border-radius: 12px;
+        cursor: pointer;
+        backdrop-filter: blur(6px);
+        /* garante que só o botão em si captura toques */
+        pointer-events: all;
+      }
     </style>
   </head>
-  
-  
-  <!-- Botão para a experiência do Poeta -->
-   <button id="btn-poeta" onclick="window.location.href='poeta.html'" style="
-   position: fixed;
-   bottom: 24px;
-   right: 24px;
-   z-index: 9999;
-   padding: 14px 22px;
-   background: rgba(0,0,0,0.72);
-   color: #fff;
-   font-size: 16px;
-    font-family: sans-serif;
-    border: 1.5px solid rgba(255,255,255,0.35);
-    border-radius: 12px;
-    cursor: pointer;
-    backdrop-filter: blur(6px);
-    ">Ver o Poeta →</button>
-
   <body>
+
+    <!-- botão dentro do body, depois da cena -->
     <a-scene
       mindar-image="imageTargetSrc: targets.mind; autoStart: true; filterMinCF: 0.001; filterBeta: 0.001;"
       color-space="sRGB"
@@ -97,18 +98,24 @@
       </a-entity>
     </a-scene>
 
+    <!-- botão aqui, dentro do body, depois da a-scene -->
+    <button id="btn-poeta" onclick="window.location.href='poeta.html'">
+      Ver o Poeta →
+    </button>
+
     <script>
       const hammer = document.getElementById('hammer')
       const tooltipImg = document.getElementById('tooltip-img')
+      const targetEntity = document.getElementById('target-entity')
       const hammerSound = new Audio('sounds/hammer.mp3')
       const lyreMusic = new Audio('sounds/lyre.mp3')
       lyreMusic.loop = true
       let musicStarted = false
       let hammerVisible = false
 
+      // iOS audio unlock — poetaMusic removido
       document.addEventListener('touchstart', function() {
         lyreMusic.play().then(() => { lyreMusic.pause(); lyreMusic.currentTime = 0 }).catch(() => {})
-        poetaMusic.load()
       }, { once: true })
 
       const phrases = [
@@ -124,12 +131,6 @@
 
       let animating = false
       let step = 0
-
-      targetEntity2.addEventListener('targetLost', () => {
-        poetaMusic.pause()
-        poetaMusic.currentTime = 0
-      })
-
       let tooltipTimer = null
 
       targetEntity.addEventListener('targetLost', () => {
@@ -137,10 +138,7 @@
         lyreMusic.pause()
         tooltipImg.setAttribute('visible', false)
         tooltipImg.removeAttribute('animation__pulse')
-        if (tooltipTimer) {
-          clearTimeout(tooltipTimer)
-          tooltipTimer = null
-        }
+        if (tooltipTimer) { clearTimeout(tooltipTimer); tooltipTimer = null }
       })
 
       targetEntity.addEventListener('targetFound', () => {
@@ -153,12 +151,11 @@
         }, 2000)
       })
 
-      document.addEventListener('click', function () {
+      // cliques na cena — o botão tem pointer-events próprios e não interfere
+      document.addEventListener('click', function (e) {
+        if (e.target.id === 'btn-poeta') return  // ignora cliques no botão
         if (!hammerVisible) return
-        if (!musicStarted) {
-          lyreMusic.play()
-          musicStarted = true
-        }
+        if (!musicStarted) { lyreMusic.play(); musicStarted = true }
 
         tooltipImg.setAttribute('visible', false)
         tooltipImg.removeAttribute('animation__pulse')
@@ -168,7 +165,6 @@
 
         hammerSound.currentTime = 0
         hammerSound.play()
-
         hammer.emit('hit')
 
         setTimeout(() => {
@@ -203,9 +199,7 @@
             if (step >= phrases.length) {
               tooltipImg.setAttribute('visible', false)
               tooltipImg.removeAttribute('animation__pulse')
-              setTimeout(() => {
-                hammer.setAttribute('visible', false)
-              }, 600)
+              setTimeout(() => { hammer.setAttribute('visible', false) }, 600)
             }
           }, 1100)
 

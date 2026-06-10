@@ -57,6 +57,15 @@
         z-index: 10000;
       }
     </style>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.module.js",
+                "three/examples/jsm/loaders/GLTFLoader.js": "https://cdn.jsdelivr.net/npm/three@0.134.0/examples/jsm/loaders/GLTFLoader.js"
+            }
+        }
+    </script>
   </head>
   <body>
 
@@ -66,10 +75,10 @@
     <div id="hint">Aponte a câmera para a imagem do livro</div>
 
     <script type="module">
-      import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.module.js'
-      import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.134.0/examples/jsm/loaders/GLTFLoader.js'
+      import * as THREE from 'three'
+      import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
       import { MindARThree } from 'https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js'
-
+      
       const hint = document.getElementById('hint')
       const canvas = document.getElementById('canvas')
       const poetaMusic = new Audio('sounds/poema.mp3')

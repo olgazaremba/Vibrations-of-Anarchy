@@ -59,13 +59,15 @@
     </style>
 
     <script type="importmap">
-        {
-            "imports": {
-                "three": "https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.module.js",
-                "three/examples/jsm/loaders/GLTFLoader.js": "https://cdn.jsdelivr.net/npm/three@0.134.0/examples/jsm/loaders/GLTFLoader.js"
-            }
-        }
-    </script>
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.module.js",
+    "three/examples/jsm/loaders/GLTFLoader.js": "https://cdn.jsdelivr.net/npm/three@0.134.0/examples/jsm/loaders/GLTFLoader.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.134.0/examples/jsm/",
+    "three/examples/jsm/": "https://cdn.jsdelivr.net/npm/three@0.134.0/examples/jsm/"
+  }
+}
+</script>
   </head>
   <body>
 
@@ -78,7 +80,7 @@
       import * as THREE from 'three'
       import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
       import { MindARThree } from 'https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js'
-      
+
       const hint = document.getElementById('hint')
       const canvas = document.getElementById('canvas')
       const poetaMusic = new Audio('sounds/poema.mp3')

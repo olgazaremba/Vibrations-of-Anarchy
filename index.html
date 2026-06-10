@@ -33,8 +33,9 @@
         <img id="tooltip" src="images/tooltip.png" crossorigin="anonymous" />
       </a-assets>
 
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+      <a-camera position="0 0 0" look-controls="enabled: false" id="main-camera"></a-camera>
 
+      <!-- ✅ HAMMER — inalterado, continua dentro do mindar-image-target -->
       <a-entity mindar-image-target="targetIndex: 0" id="target-entity">
 
         <a-gltf-model
@@ -78,11 +79,15 @@
 
       </a-entity>
 
-      <a-entity mindar-image-target="targetIndex: 1" id="target-entity-2">
+      <!-- 
+        ✅ POETA — fora do mindar-image-target.
+        Começa invisível. O JS vai posicioná-lo e torná-lo visível
+        quando a target for detetada, usando a pose da câmera nesse momento.
+      -->
+      <a-entity id="poeta-anchor">
         <a-gltf-model
           id="poeta"
           src="#poeta-model"
-          position="-0.2 0.5 1"
           rotation="90 0 -180"
           scale="-0.4 0.4 0.4"
           visible="false"
@@ -93,6 +98,7 @@
     </a-scene>
 
     <script>
+      // ─── HAMMER (inalterado) ──────────────────────────────────────────────────
       const hammer = document.getElementById('hammer')
       const tooltipImg = document.getElementById('tooltip-img')
       const hammerSound = new Audio('sounds/hammer.mp3')
@@ -123,27 +129,6 @@
 
       const targetEntity = document.getElementById('target-entity')
       const targetEntity2 = document.getElementById('target-entity-2')
-      const poetaModel = document.getElementById('poeta')
-
-      let poetaLoaded = false
-
-      poetaModel.addEventListener('model-loaded', () => {
-        poetaLoaded = true
-      })
-
-      targetEntity2.addEventListener('targetFound', () => {
-        hammerVisible = false
-        if (poetaLoaded) {
-          poetaModel.setAttribute('visible', true)
-          poetaMusic.currentTime = 0
-          poetaMusic.play()
-        }
-      })
-
-      targetEntity2.addEventListener('targetLost', () => {
-        poetaMusic.pause()
-        poetaMusic.currentTime = 0
-      })
 
       let tooltipTimer = null
 
@@ -152,10 +137,7 @@
         lyreMusic.pause()
         tooltipImg.setAttribute('visible', false)
         tooltipImg.removeAttribute('animation__pulse')
-        if (tooltipTimer) {
-          clearTimeout(tooltipTimer)
-          tooltipTimer = null
-        }
+        if (tooltipTimer) { clearTimeout(tooltipTimer); tooltipTimer = null }
       })
 
       targetEntity.addEventListener('targetFound', () => {
@@ -170,10 +152,7 @@
 
       document.addEventListener('click', function () {
         if (!hammerVisible) return
-        if (!musicStarted) {
-          lyreMusic.play()
-          musicStarted = true
-        }
+        if (!musicStarted) { lyreMusic.play(); musicStarted = true }
 
         tooltipImg.setAttribute('visible', false)
         tooltipImg.removeAttribute('animation__pulse')
@@ -183,7 +162,6 @@
 
         hammerSound.currentTime = 0
         hammerSound.play()
-
         hammer.emit('hit')
 
         setTimeout(() => {
@@ -218,14 +196,94 @@
             if (step >= phrases.length) {
               tooltipImg.setAttribute('visible', false)
               tooltipImg.removeAttribute('animation__pulse')
-              setTimeout(() => {
-                hammer.setAttribute('visible', false)
-              }, 600)
+              setTimeout(() => { hammer.setAttribute('visible', false) }, 600)
             }
           }, 1100)
 
         }, 360)
       })
+
+      // ─── POETA — world-lock ───────────────────────────────────────────────────
+      const poetaAnchor = document.getElementById('poeta-anchor')
+      const poetaModel  = document.getElementById('poeta')
+      const camera      = document.getElementById('main-camera')
+
+      let poetaPlaced = false   // garante que só posicionamos uma vez
+      let poetaLoaded = false
+
+      poetaModel.addEventListener('model-loaded', () => { poetaLoaded = true })
+
+      // O mindar-image-target do poeta existe apenas para detetar a imagem.
+      // Usamos um target-entity-2 invisível só para os eventos.
+      const targetEntity2El = document.createElement('a-entity')
+      targetEntity2El.setAttribute('mindar-image-target', 'targetIndex: 1')
+      targetEntity2El.id = 'target-entity-2'
+      document.querySelector('a-scene').appendChild(targetEntity2El)
+
+      targetEntity2El.addEventListener('targetFound', () => {
+        // Toca o áudio sempre que a target é vista
+        poetaMusic.currentTime = 0
+        poetaMusic.play()
+
+        if (poetaPlaced) {
+          // Já posicionado — só mostra
+          poetaModel.setAttribute('visible', true)
+          return
+        }
+
+        // Aguarda o modelo estar carregado antes de posicionar
+        const place = () => {
+          if (!poetaLoaded) { setTimeout(place, 100); return }
+          placePoetaInWorld()
+        }
+        place()
+      })
+
+      targetEntity2El.addEventListener('targetLost', () => {
+        poetaMusic.pause()
+        poetaMusic.currentTime = 0
+        // Não escondemos — o modelo fica no mundo mesmo sem a target visível
+      })
+
+      function placePoetaInWorld() {
+        /*
+          Obtemos a pose atual da câmera A-Frame e projetamos um ponto
+          ~1.5 m à frente dela no plano horizontal, onde o poeta vai ficar.
+        */
+        const camObject3D = camera.object3D
+
+        // Direção "para a frente" da câmera no espaço mundo
+        const forward = new THREE.Vector3(0, 0, -1)
+        forward.applyQuaternion(camObject3D.quaternion)
+        forward.y = 0          // projeta no plano horizontal
+        forward.normalize()
+
+        const camPos = new THREE.Vector3()
+        camObject3D.getWorldPosition(camPos)
+
+        // Coloca o poeta 1.5 m à frente da câmera
+        const targetPos = camPos.clone().addScaledVector(forward, 1.5)
+
+        poetaAnchor.setAttribute('position', {
+          x: targetPos.x,
+          y: camPos.y - 0.8,   // ligeiramente abaixo do nível dos olhos
+          z: targetPos.z
+        })
+
+        // Roda o poeta para olhar para a câmera (só no eixo Y)
+        const angle = Math.atan2(
+          camPos.x - targetPos.x,
+          camPos.z - targetPos.z
+        )
+        poetaAnchor.setAttribute('rotation', {
+          x: 0,
+          y: THREE.MathUtils.radToDeg(angle),
+          z: 0
+        })
+
+        poetaModel.setAttribute('visible', true)
+        poetaPlaced = true
+      }
     </script>
   </body>
 </html>

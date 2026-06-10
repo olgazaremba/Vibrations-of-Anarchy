@@ -5,18 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>O Poeta Carpinteiro</title>
 
-    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/ar.js@2.2.2/aframe/build/aframe-ar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/loaders/GLTFLoader.js"></script>
 
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { overflow: hidden; background: #000; }
 
+      #container {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+      }
+
+      /* vídeo da câmera em fundo */
+      #video {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        object-fit: cover;
+        z-index: 0;
+      }
+
+      /* canvas Three.js por cima */
+      #canvas {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        z-index: 1;
+        pointer-events: none;
+      }
+
       #btn-voltar {
         position: fixed;
-        top: 20px;
-        left: 20px;
+        top: 20px; left: 20px;
         z-index: 10000;
         padding: 12px 18px;
         background: rgba(0,0,0,0.72);
@@ -31,8 +54,7 @@
 
       #hint {
         position: fixed;
-        bottom: 32px;
-        left: 50%;
+        bottom: 32px; left: 50%;
         transform: translateX(-50%);
         background: rgba(0,0,0,0.65);
         color: #fff;
@@ -40,72 +62,175 @@
         font-family: sans-serif;
         padding: 10px 20px;
         border-radius: 20px;
-        text-align: center;
         pointer-events: none;
         transition: opacity 0.6s;
         backdrop-filter: blur(4px);
         white-space: nowrap;
+        z-index: 10000;
       }
     </style>
   </head>
   <body>
 
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="canvas"></canvas>
     <button id="btn-voltar" onclick="window.location.href='index.html'">← Voltar</button>
     <div id="hint">Aponte a câmera para a imagem do livro</div>
 
-    <a-scene
-      embedded
-      arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;"
-      vr-mode-ui="enabled: false"
-      renderer="logarithmicDepthBuffer: true; antialias: true;"
-      style="width:100vw; height:100vh; position:fixed; top:0; left:0;"
-    >
-      <a-assets>
-        <a-asset-item id="poeta-model" src="scene tile/PoetaCarpinteiro.gltf"></a-asset-item>
-      </a-assets>
-
-      <a-marker
-        type="pattern"
-        url="markers/poeta.patt"
-        smooth="true"
-        smoothCount="10"
-        smoothTolerance="0.01"
-        smoothThreshold="5"
-        id="poeta-marker"
-      >
-        <a-gltf-model
-          id="poeta"
-          src="#poeta-model"
-          position="0 0.5 0"
-          rotation="90 0 -180"
-          scale="-0.4 0.4 0.4"
-          animation-mixer="clip: Action.002; loop: repeat"
-        ></a-gltf-model>
-      </a-marker>
-
-      <a-entity camera></a-entity>
-    </a-scene>
-
     <script>
+    (async () => {
+
       const hint = document.getElementById('hint')
-      const marker = document.getElementById('poeta-marker')
+      const video = document.getElementById('video')
+      const canvas = document.getElementById('canvas')
       const poetaMusic = new Audio('sounds/poema.mp3')
 
-      document.addEventListener('touchstart', () => {
-        poetaMusic.load()
-      }, { once: true })
+      // ── 1. Câmera real ──────────────────────────────────────────────
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false
+      })
+      video.srcObject = stream
+      await new Promise(r => video.onloadedmetadata = r)
+      video.play()
 
-      marker.addEventListener('markerFound', () => {
-        hint.style.opacity = '0'
-        poetaMusic.currentTime = 0
-        poetaMusic.play().catch(() => {})
+      // ── 2. MindAR (só para deteção, sem A-Frame) ────────────────────
+      const mindar = new MINDAR.IMAGE.MindARThree({
+        container: document.body,
+        imageTargetSrc: 'targets.mind',
+        // usa o segundo target (index 1) — o da target2 do livro
+        maxTrack: 1,
       })
 
-      marker.addEventListener('markerLost', () => {
+      // Substitui o vídeo interno do MindAR pelo nosso
+      const { renderer: mindRenderer, scene: mindScene, camera: mindCamera } = mindar
+
+      // ── 3. Three.js — cena própria com câmera de giroscópio ─────────
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true })
+      renderer.setPixelRatio(window.devicePixelRatio)
+      renderer.setSize(window.innerWidth, window.innerHeight)
+      renderer.setClearColor(0x000000, 0)
+
+      const scene = new THREE.Scene()
+
+      // Câmera perspetiva normal
+      const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 100)
+      camera.position.set(0, 0, 0)
+      scene.add(camera)
+
+      // Luz
+      const ambientLight = new THREE.AmbientLight(0xffffff, 1.2)
+      scene.add(ambientLight)
+      const dirLight = new THREE.DirectionalLight(0xffffff, 1)
+      dirLight.position.set(1, 2, 1)
+      scene.add(dirLight)
+
+      // ── 4. Carregar modelo ──────────────────────────────────────────
+      let poetaModel = null
+      let mixer = null
+      const loader = new THREE.GLTFLoader()
+
+      loader.load('scene tile/PoetaCarpinteiro.gltf', (gltf) => {
+        poetaModel = gltf.scene
+        poetaModel.visible = false
+
+        // Rotação e escala originais do projeto
+        poetaModel.rotation.set(Math.PI / 2, 0, -Math.PI)
+        poetaModel.scale.set(-0.4, 0.4, 0.4)
+
+        // Posiciona 1.5m à frente e ligeiramente abaixo
+        poetaModel.position.set(0, -0.5, -1.5)
+
+        scene.add(poetaModel)
+
+        if (gltf.animations && gltf.animations.length > 0) {
+          mixer = new THREE.AnimationMixer(poetaModel)
+          const clip = THREE.AnimationClip.findByName(gltf.animations, 'Action.002')
+            || gltf.animations[0]
+          mixer.clipAction(clip).play()
+        }
+      })
+
+      // ── 5. Giroscópio — roda a câmera com o dispositivo ────────────
+      let gyroEnabled = false
+      const euler = new THREE.Euler()
+      const quaternion = new THREE.Quaternion()
+
+      // Pede permissão no iOS
+      if (typeof DeviceOrientationEvent !== 'undefined' &&
+          typeof DeviceOrientationEvent.requestPermission === 'function') {
+        document.addEventListener('touchstart', async () => {
+          try {
+            const perm = await DeviceOrientationEvent.requestPermission()
+            if (perm === 'granted') gyroEnabled = true
+          } catch(e) {}
+        }, { once: true })
+      } else {
+        gyroEnabled = true
+      }
+
+      // Orientação inicial para calibrar o "zero"
+      let baseQuaternion = null
+
+      window.addEventListener('deviceorientation', (e) => {
+        if (!gyroEnabled) return
+
+        // Converte os ângulos do giroscópio para quaternion
+        const alpha = THREE.MathUtils.degToRad(e.alpha || 0)
+        const beta  = THREE.MathUtils.degToRad(e.beta  || 0)
+        const gamma = THREE.MathUtils.degToRad(e.gamma || 0)
+
+        euler.set(beta, alpha, -gamma, 'YXZ')
+        quaternion.setFromEuler(euler)
+
+        // Guarda o quaternion inicial como referência
+        if (!baseQuaternion) {
+          baseQuaternion = quaternion.clone()
+        }
+
+        // Aplica rotação relativa à orientação inicial
+        const relativeQ = baseQuaternion.clone().invert().multiply(quaternion)
+        camera.quaternion.copy(relativeQ)
+      })
+
+      // ── 6. MindAR — deteção da target ──────────────────────────────
+      await mindar.start()
+
+      const anchor = mindar.addAnchor(1) // targetIndex 1 = imagem do poeta
+
+      anchor.onTargetFound = () => {
+        hint.style.opacity = '0'
+        if (poetaModel) poetaModel.visible = true
+        // Reseta o "zero" do giroscópio quando a target é encontrada
+        baseQuaternion = null
+        poetaMusic.currentTime = 0
+        poetaMusic.play().catch(() => {})
+      }
+
+      anchor.onTargetLost = () => {
         hint.style.opacity = '1'
         poetaMusic.pause()
         poetaMusic.currentTime = 0
+        // Mantém o modelo visível — fica world-locked
+      }
+
+      // ── 7. Loop de animação ─────────────────────────────────────────
+      const clock = new THREE.Clock()
+
+      renderer.setAnimationLoop(() => {
+        const delta = clock.getDelta()
+        if (mixer) mixer.update(delta)
+        renderer.render(scene, camera)
       })
+
+      // Resize
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight
+        camera.updateProjectionMatrix()
+        renderer.setSize(window.innerWidth, window.innerHeight)
+      })
+
+    })()
     </script>
   </body>
 </html>

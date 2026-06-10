@@ -122,16 +122,22 @@
 
       let animating = false
       let step = 0
-
+      
+      const scene = document.querySelector('a-scene')
+      const targetEntity = document.getElementById('target-entity')
       const targetEntity2 = document.getElementById('target-entity-2')
+      
+      const poetaModel = document.getElementById('poeta')
+      const poetaAnchor = document.getElementById('poeta-anchor')
+      
+      let poetaLoaded = false
+      let poetaPlaced = false
+      let poetaTargetVisible = false
+      
+      poetaModel.addEventListener('model-loaded', () => {
+        poetaLoaded = true
 
-
-let poetaLoaded = false
-let poetaPlaced = false
-let poetaTargetVisible = false
-
-poetaModel.addEventListener('model-loaded', () => {
-  poetaLoaded = true
+  console.log('Modelo do poeta carregado')
 
   if (poetaTargetVisible && !poetaPlaced) {
     placePoeta()
@@ -139,7 +145,8 @@ poetaModel.addEventListener('model-loaded', () => {
 })
 
 function placePoeta() {
-  if (!poetaLoaded || poetaPlaced) return
+  if (!poetaLoaded) return
+  if (poetaPlaced) return
 
   const worldPos = new THREE.Vector3()
   const worldQuat = new THREE.Quaternion()
@@ -152,10 +159,6 @@ function placePoeta() {
 
   poetaAnchor.object3D.updateMatrixWorld(true)
 
-  // Ajuste fino
-  poetaAnchor.object3D.translateY(0.2)
-  poetaAnchor.object3D.translateZ(0.3)
-
   poetaModel.setAttribute('visible', true)
 
   poetaPlaced = true
@@ -164,29 +167,13 @@ function placePoeta() {
 }
 
 targetEntity2.addEventListener('targetFound', () => {
-  hammerVisible = false
+  console.log('TARGET 2 ENCONTRADO')
 
+  hammerVisible = false
   poetaTargetVisible = true
 
   if (!poetaPlaced) {
     placePoeta()
-
-    setTimeout(() => {
-
-      // Remove da hierarquia de tracking
-      scene.object3D.attach(poetaAnchor.object3D)
-
-      console.log('Poeta destacado do target')
-
-      // Para o rastreamento do MindAR
-      const mindarSystem = scene.systems['mindar-image-system']
-
-      if (mindarSystem) {
-        mindarSystem.stop()
-        console.log('MindAR parado')
-      }
-
-    }, 300)
   }
 
   poetaMusic.currentTime = 0
@@ -194,6 +181,8 @@ targetEntity2.addEventListener('targetFound', () => {
 })
 
 targetEntity2.addEventListener('targetLost', () => {
+  console.log('TARGET 2 PERDIDO')
+
   poetaTargetVisible = false
 
   poetaMusic.pause()

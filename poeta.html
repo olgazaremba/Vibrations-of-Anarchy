@@ -155,23 +155,25 @@
         poetaMusic.currentTime = 0
       }
 
-      // ── 5. Start ──────────────────────────────────────────────────
+      // ── Start ─────────────────────────────────────────────────────
+      console.log('A iniciar MindAR...')
+      try {
+        await mindarThree.start()
+        console.log('MindAR iniciado com sucesso')
+      } catch(e) {
+        console.error('Erro no mindarThree.start():', e)
+      }
 
-      await mindarThree.start()
-console.log('MindAR iniciado')
-
-// testa se o onTargetFound dispara de todo
-setInterval(() => {
-  console.log('anchor visible:', anchor.group.visible)
-  console.log('filhos do anchor:', anchor.group.children.length)
-  console.log('camera pos:', camera.position)
-}, 2000)
+      // testa se o onTargetFound dispara de todo
+      setInterval(() => {
+        console.log('anchor visible:', anchor.group.visible)
+        console.log('filhos do anchor:', anchor.group.children.length)
+      }, 2000)
 
       const clock = new THREE.Clock()
       renderer.setAnimationLoop(() => {
-        const delta = clock.getDelta()
-        if (mixer) mixer.update(delta)
-        mindarThree.renderer.render(scene, camera)
+        if (window._poetaMixer) window._poetaMixer.update(clock.getDelta())
+        renderer.render(scene, camera)
       })
 
     </script>

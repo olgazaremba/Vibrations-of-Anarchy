@@ -134,40 +134,37 @@
       // ── 5. Eventos ────────────────────────────────────────────────
       anchor.onTargetFound = () => {
   console.log('TARGET FOUND ✅')
-  console.log('model existe?', !!model)
-  console.log('modelPlaced?', modelPlaced)
   hint.style.opacity = '0'
   poetaMusic.currentTime = 0
   poetaMusic.play().catch(() => {})
 
-  if (!model) {
-    console.log('modelo ainda não carregou')
-    return
-  }
-
-  anchor.group.updateWorldMatrix(true, true)
-  model.updateWorldMatrix(true, true)
-
-  const worldPos = new THREE.Vector3()
-  const worldQuat = new THREE.Quaternion()
-  const worldScale = new THREE.Vector3()
-  model.matrixWorld.decompose(worldPos, worldQuat, worldScale)
-
-  console.log('worldPos:', worldPos)
-  console.log('worldQuat:', worldQuat)
+  if (!model) return
 
   if (!modelPlaced) {
+    // Remove do anchor
     anchor.group.remove(model)
     scene.add(model)
-    model.position.copy(worldPos)
-    model.quaternion.copy(worldQuat)
+
+    // Coloca o modelo à frente da câmera no momento da deteção
+    const forward = new THREE.Vector3(0, 0, -1)
+    forward.applyQuaternion(camera.quaternion)
+    forward.normalize()
+
+    const pos = camera.position.clone().addScaledVector(forward, 2)
+    model.position.copy(pos)
+
+    // Roda para olhar para a câmera (só eixo Y)
+    const angle = Math.atan2(
+      camera.position.x - pos.x,
+      camera.position.z - pos.z
+    )
+    model.rotation.set(Math.PI / 2, angle, -Math.PI)
     model.scale.set(-0.4, 0.4, 0.4)
     model.visible = true
     modelPlaced = true
-    console.log('Modelo colocado na cena ✅')
+    console.log('Modelo fixo à frente da câmera ✅', pos)
   } else {
     model.visible = true
-    console.log('Modelo já estava na cena, tornado visível')
   }
 }
 

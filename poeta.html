@@ -71,7 +71,7 @@
 
     <div id="mindar-container"></div>
     <button id="btn-voltar" onclick="window.location.href='index.html'">← Voltar</button>
-    <div id="hint">Aponte a câmera para o azulejo</div>
+    <div id="hint">Aponte a câmera para a imagem do livro</div>
 
     <script type="module">
       import * as THREE from 'three'
@@ -99,39 +99,32 @@
       dirLight.position.set(1, 2, 1)
       scene.add(dirLight)
 
-      // ── 3. Anchor ─────────────────────────────────────────────────
+      // ── 3. Anchor (só para deteção) ───────────────────────────────
       const anchor = mindarThree.addAnchor(0)
 
       // ── 4. Modelo ─────────────────────────────────────────────────
+      let model = null
+      let mixer = null
+      let modelPlaced = false
+
       const loader = new GLTFLoader()
       loader.load(
         'scene-tile/PoetaCarpinteiro.gltf',
         (gltf) => {
           console.log('Modelo carregado ✅')
-          console.log('Animações:', gltf.animations.map(a => a.name))
-
-          const model = gltf.scene
+          model = gltf.scene
           model.rotation.set(Math.PI / 2, 0, -Math.PI)
           model.scale.set(-0.4, 0.4, 0.4)
-          model.position.set(0, 0, 0)
+          model.visible = false
+
+          // começa no anchor para herdar a pose inicial
           anchor.group.add(model)
 
           if (gltf.animations?.length > 0) {
-            const mixer = new THREE.AnimationMixer(model)
+            mixer = new THREE.AnimationMixer(model)
             const clip = THREE.AnimationClip.findByName(gltf.animations, 'Action.002')
               || gltf.animations[0]
             mixer.clipAction(clip).play()
-
-            const clock = new THREE.Clock()
-            renderer.setAnimationLoop(() => {
-              mixer.update(clock.getDelta())
-              renderer.render(scene, camera)
-            })
-          } else {
-            // sem animação — loop simples
-            renderer.setAnimationLoop(() => {
-              renderer.render(scene, camera)
-            })
           }
         },
         undefined,
@@ -142,15 +135,45 @@
       anchor.onTargetFound = () => {
         console.log('TARGET FOUND ✅')
         hint.style.opacity = '0'
-        anchor.group.traverse(obj => { obj.visible = true })
         poetaMusic.currentTime = 0
-        poetaMusic.play().catch(e => console.warn('Audio:', e))
+        poetaMusic.play().catch(() => {})
+
+        if (!model) return
+
+        if (!modelPlaced) {
+          // Primeira deteção — captura a pose mundial e fixa o modelo na cena
+          anchor.group.updateWorldMatrix(true, true)
+          model.updateWorldMatrix(true, true)
+
+          // Obtém posição e rotação mundiais do modelo neste momento
+          const worldPos = new THREE.Vector3()
+          const worldQuat = new THREE.Quaternion()
+          const worldScale = new THREE.Vector3()
+          model.matrixWorld.decompose(worldPos, worldQuat, worldScale)
+
+          // Remove do anchor e adiciona diretamente à cena com a mesma pose
+          anchor.group.remove(model)
+          scene.add(model)
+
+          model.position.copy(worldPos)
+          model.quaternion.copy(worldQuat)
+          // mantém a escala original (a worldScale pode ter distorções do anchor)
+          model.scale.set(-0.4, 0.4, 0.4)
+          model.visible = true
+
+          modelPlaced = true
+          console.log('Modelo fixo no mundo ✅', worldPos)
+        } else {
+          // Já está no mundo — só garante visível
+          model.visible = true
+        }
       }
 
       anchor.onTargetLost = () => {
         hint.style.opacity = '1'
         poetaMusic.pause()
         poetaMusic.currentTime = 0
+        // modelo permanece visível e fixo no mundo
       }
 
       // ── 6. Start ──────────────────────────────────────────────────
@@ -160,6 +183,12 @@
       } catch(e) {
         console.error('Erro no start:', e)
       }
+
+      const clock = new THREE.Clock()
+      renderer.setAnimationLoop(() => {
+        if (mixer) mixer.update(clock.getDelta())
+        renderer.render(scene, camera)
+      })
 
     </script>
   </body>

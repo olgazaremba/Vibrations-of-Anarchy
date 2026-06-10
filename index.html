@@ -124,8 +124,7 @@
       let step = 0
 
       const targetEntity2 = document.getElementById('target-entity-2')
-const poetaModel = document.getElementById('poeta')
-const poetaAnchor = document.getElementById('poeta-anchor')
+
 
 let poetaLoaded = false
 let poetaPlaced = false
@@ -134,7 +133,6 @@ let poetaTargetVisible = false
 poetaModel.addEventListener('model-loaded', () => {
   poetaLoaded = true
 
-  // Caso a imagem já esteja visível quando o modelo terminar de carregar
   if (poetaTargetVisible && !poetaPlaced) {
     placePoeta()
   }
@@ -151,17 +149,18 @@ function placePoeta() {
 
   poetaAnchor.object3D.position.copy(worldPos)
   poetaAnchor.object3D.quaternion.copy(worldQuat)
+
   poetaAnchor.object3D.updateMatrixWorld(true)
 
-  // Ajuste fino da posição do modelo
- poetaAnchor.object3D.translateY(3)
-poetaAnchor.object3D.translateZ(5)
+  // Ajuste fino
+  poetaAnchor.object3D.translateY(0.2)
+  poetaAnchor.object3D.translateZ(0.3)
 
   poetaModel.setAttribute('visible', true)
 
   poetaPlaced = true
 
-  console.log('Poeta colocado no mundo')
+  console.log('Poeta colocado')
 }
 
 targetEntity2.addEventListener('targetFound', () => {
@@ -171,6 +170,23 @@ targetEntity2.addEventListener('targetFound', () => {
 
   if (!poetaPlaced) {
     placePoeta()
+
+    setTimeout(() => {
+
+      // Remove da hierarquia de tracking
+      scene.object3D.attach(poetaAnchor.object3D)
+
+      console.log('Poeta destacado do target')
+
+      // Para o rastreamento do MindAR
+      const mindarSystem = scene.systems['mindar-image-system']
+
+      if (mindarSystem) {
+        mindarSystem.stop()
+        console.log('MindAR parado')
+      }
+
+    }, 300)
   }
 
   poetaMusic.currentTime = 0

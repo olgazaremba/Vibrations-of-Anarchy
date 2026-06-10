@@ -141,10 +141,13 @@
 
       // ── 4. Eventos da target ──────────────────────────────────────
       anchor.onTargetFound = () => {
-        hint.style.opacity = '0'
-        poetaMusic.currentTime = 0
-        poetaMusic.play().catch(() => {})
-      }
+  console.log('TARGET FOUND ✅')
+  hint.style.opacity = '0'
+  // força todos os filhos visíveis
+  anchor.group.traverse(obj => { obj.visible = true })
+  poetaMusic.currentTime = 0
+  poetaMusic.play().catch(e => console.warn('Audio:', e))
+}
 
       anchor.onTargetLost = () => {
         hint.style.opacity = '1'
@@ -153,7 +156,16 @@
       }
 
       // ── 5. Start ──────────────────────────────────────────────────
+
       await mindarThree.start()
+console.log('MindAR iniciado')
+
+// testa se o onTargetFound dispara de todo
+setInterval(() => {
+  console.log('anchor visible:', anchor.group.visible)
+  console.log('filhos do anchor:', anchor.group.children.length)
+  console.log('camera pos:', camera.position)
+}, 2000)
 
       const clock = new THREE.Clock()
       renderer.setAnimationLoop(() => {

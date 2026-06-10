@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>O Poeta Carpinteiro</title>
+
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
+    <!-- AR.js com suporte a marker pattern custom -->
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { overflow: hidden; background: #000; }
+
+      #ui-overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        z-index: 9999;
+        pointer-events: none;
+      }
+
+      #btn-voltar {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 10000;
+        pointer-events: all;
+        padding: 12px 18px;
+        background: rgba(0,0,0,0.72);
+        color: #fff;
+        font-size: 15px;
+        font-family: sans-serif;
+        border: 1.5px solid rgba(255,255,255,0.35);
+        border-radius: 12px;
+        cursor: pointer;
+        backdrop-filter: blur(6px);
+      }
+
+      #hint {
+        position: fixed;
+        bottom: 32px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.65);
+        color: #fff;
+        font-size: 14px;
+        font-family: sans-serif;
+        padding: 10px 20px;
+        border-radius: 20px;
+        text-align: center;
+        pointer-events: none;
+        transition: opacity 0.6s;
+        backdrop-filter: blur(4px);
+      }
+    </style>
+  </head>
+  <body>
+
+    <div id="ui-overlay">
+      <button id="btn-voltar" onclick="window.location.href='index.html'">← Voltar</button>
+      <div id="hint">Aponte a câmera para a imagem do livro</div>
+    </div>
+
+    <a-scene
+      embedded
+      arjs="sourceType: webcam;
+            detectionMode: mono_and_matrix;
+            matrixCodeType: 3x3;
+            debugUIEnabled: false;
+            trackingMethod: best;"
+      vr-mode-ui="enabled: false"
+      renderer="logarithmicDepthBuffer: true; antialias: true;"
+      style="width:100vw; height:100vh;"
+    >
+      <a-assets>
+        <a-asset-item id="poeta-model" src="scene tile/PoetaCarpinteiro.gltf"></a-asset-item>
+      </a-assets>
+
+      <!--
+        O marker type="pattern" usa o ficheiro .patt gerado a partir
+        da sua imagem-alvo. Ver instruções abaixo.
+        smooth e smoothCount ajudam a estabilizar o modelo no espaço.
+      -->
+      <a-marker
+        type="pattern"
+        url="markers/poeta.patt"
+        smooth="true"
+        smoothCount="10"
+        smoothTolerance="0.01"
+        smoothThreshold="5"
+        id="poeta-marker"
+      >
+        <!--
+          O modelo fica dentro do marker APENAS para ser ativado por ele.
+          A escala e posição são relativas ao marker físico.
+          Rotation 0 0 0 porque o AR.js já orienta o objeto com o marker.
+        -->
+        <a-gltf-model
+          id="poeta"
+          src="#poeta-model"
+          position="0 0.5 0"
+          rotation="0 0 0"
+          scale="0.4 0.4 0.4"
+          animation-mixer="clip: Action.002; loop: repeat"
+        ></a-gltf-model>
+      </a-marker>
+
+      <a-entity camera></a-entity>
+
+    </a-scene>
+
+    <script>
+      const hint = document.getElementById('hint')
+      const marker = document.getElementById('poeta-marker')
+      const poetaMusic = new Audio('sounds/poema.mp3')
+
+      // Desbloqueia áudio no primeiro toque (necessário em iOS)
+      document.addEventListener('touchstart', () => {
+        poetaMusic.load()
+      }, { once: true })
+
+      marker.addEventListener('markerFound', () => {
+        hint.style.opacity = '0'
+        poetaMusic.currentTime = 0
+        poetaMusic.play().catch(() => {})
+      })
+
+      marker.addEventListener('markerLost', () => {
+        hint.style.opacity = '1'
+        poetaMusic.pause()
+        poetaMusic.currentTime = 0
+      })
+    </script>
+  </body>
+</html>

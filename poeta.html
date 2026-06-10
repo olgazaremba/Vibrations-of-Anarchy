@@ -115,29 +115,13 @@
 
       // ── 3. Modelo ─────────────────────────────────────────────────
       let mixer = null
-      const loader = new GLTFLoader()
-
-      const anchor = mindarThree.addAnchor(0)
-
-      loader.load('scene-tile/PoetaCarpinteiro.gltf', (gltf) => {
-        const model = gltf.scene
-        model.rotation.set(Math.PI / 2, 0, -Math.PI)
-        model.scale.set(-0.4, 0.4, 0.4)
-        model.position.set(0, 0, 0)
-
-        anchor.group.add(model)
-
-        if (gltf.animations?.length > 0) {
-          mixer = new THREE.AnimationMixer(model)
-          const clip = THREE.AnimationClip.findByName(gltf.animations, 'Action.002')
-            || gltf.animations[0]
-          mixer.clipAction(clip).play()
-        }
-
-        console.log('Modelo carregado com sucesso')
-      }, undefined, (err) => {
-        console.error('Erro ao carregar modelo:', err)
-      })
+      // TESTE — cubo vermelho no lugar do modelo
+const cubeGeo = new THREE.BoxGeometry(0.1, 0.1, 0.1)
+const cubeMat = new THREE.MeshStandardMaterial({ color: 0xff0000 })
+const cubo = new THREE.Mesh(cubeGeo, cubeMat)
+cubo.position.set(0, 0, 0)
+anchor.group.add(cubo)
+console.log('Cubo adicionado')
 
       // ── 4. Eventos da target ──────────────────────────────────────
       anchor.onTargetFound = () => {

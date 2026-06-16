@@ -158,11 +158,6 @@
     }
   })
 
-    const sceneEl = document.querySelector('a-scene')
-    sceneEl.addEventListener('renderstart', () => {
-    sceneEl.renderer.setAnimationLoop(null) 
-    })
-
   AFRAME.registerComponent('poeta-follow', {
   tick: function () {
     if (!poetaActive) return

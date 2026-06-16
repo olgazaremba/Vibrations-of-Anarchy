@@ -11,6 +11,25 @@
       * { margin: 0; padding: 0; }
       body { overflow: hidden; }
     </style>
+    <script>
+    AFRAME.registerComponent('poeta-follow', {
+      tick: function () {
+        const targetObj = document.getElementById('target-entity-2')?.object3D
+        const poetaModel = document.getElementById('poeta')
+        if (!targetObj || !poetaModel || !window.__poetaActive) return
+
+        const THREE = AFRAME.THREE
+        targetObj.updateMatrixWorld(true)
+        const pos = new THREE.Vector3()
+        const quat = new THREE.Quaternion()
+        const scl = new THREE.Vector3()
+        targetObj.matrixWorld.decompose(pos, quat, scl)
+
+        poetaModel.object3D.position.copy(pos)
+        poetaModel.object3D.quaternion.copy(quat)
+      }
+    })
+  </script>
   </head>
   <body>
     <a-scene
@@ -79,7 +98,7 @@
 
       </a-entity>
 
-      <a-entity mindar-image-target="targetIndex: 1" id="target-entity-2">
+      <a-entity mindar-image-target="targetIndex: 1" id="target-entity-2"></a-entity>
         <a-gltf-model
           id="poeta"
           src="#poeta-model"
@@ -88,7 +107,6 @@
           visible="false"
           animation-mixer="clip: Action.002; loop: repeat"
         ></a-gltf-model>
-      </a-entity>
 
     </a-scene>
 
@@ -127,48 +145,31 @@
       const poetaModel = document.getElementById('poeta')
 
     let poetaCleanupTimer = null
-    let poetaActive = false
-
-
-    const poetaWorldPos = new THREE.Vector3()
-    const poetaWorldQuat = new THREE.Quaternion()
-    const poetaWorldScale = new THREE.Vector3()
+    window.__poetaActive = false
 
     function resetPoetaState() {
-      poetaModel.setAttribute('visible', false)
-      poetaActive = false
-      poetaMusic.pause()
-      poetaMusic.currentTime = 0
-      poetaCleanupTimer = null
+    poetaModel.setAttribute('visible', false)
+    window.__poetaActive = false
+    poetaMusic.pause()
+    poetaMusic.currentTime = 0
+    poetaCleanupTimer = null
     }
 
     targetEntity2.addEventListener('targetFound', () => {
-      if (poetaCleanupTimer) { clearTimeout(poetaCleanupTimer); poetaCleanupTimer = null }
-      hammerVisible = false
-      poetaActive = true
-      poetaModel.setAttribute('visible', true)
-      poetaMusic.currentTime = 0
-      poetaMusic.play()
-  })
+    if (poetaCleanupTimer) { clearTimeout(poetaCleanupTimer); poetaCleanupTimer = null }
+    hammerVisible = false
+    window.__poetaActive = true
+    poetaModel.setAttribute('visible', true)
+    poetaMusic.currentTime = 0
+    poetaMusic.play()
+    })
 
     targetEntity2.addEventListener('targetLost', () => {
-    poetaActive = false
+    window.__poetaActive = false
     if (!poetaCleanupTimer) {
-    poetaCleanupTimer = setTimeout(resetPoetaState, 5000)
+      poetaCleanupTimer = setTimeout(resetPoetaState, 5000)
     }
-  })
-
-  AFRAME.registerComponent('poeta-follow', {
-  tick: function () {
-    if (!poetaActive) return
-    const targetObj = targetEntity2.object3D
-    targetObj.updateMatrixWorld(true)
-    targetObj.matrixWorld.decompose(poetaWorldPos, poetaWorldQuat, poetaWorldScale)
-
-    poetaModel.object3D.position.copy(poetaWorldPos)
-    poetaModel.object3D.quaternion.copy(poetaWorldQuat)
-    }
-  })
+    })
 
       let tooltipTimer = null
 

@@ -11,25 +11,6 @@
       * { margin: 0; padding: 0; }
       body { overflow: hidden; }
     </style>
-    <script>
-    AFRAME.registerComponent('poeta-follow', {
-      tick: function () {
-        const targetObj = document.getElementById('target-entity-2')?.object3D
-        const poetaModel = document.getElementById('poeta')
-        if (!targetObj || !poetaModel || !window.__poetaActive) return
-
-        const THREE = AFRAME.THREE
-        targetObj.updateMatrixWorld(true)
-        const pos = new THREE.Vector3()
-        const quat = new THREE.Quaternion()
-        const scl = new THREE.Vector3()
-        targetObj.matrixWorld.decompose(pos, quat, scl)
-
-        poetaModel.object3D.position.copy(pos)
-        poetaModel.object3D.quaternion.copy(quat)
-      }
-    })
-  </script>
   </head>
   <body>
     <a-scene
@@ -37,7 +18,6 @@
       color-space="sRGB"
       vr-mode-ui="enabled: false"
       device-orientation-permission-ui="enabled: false"
-      poeta-follow
     >
       <a-assets>
         <a-asset-item id="hammer-model" src="cross_pein_hammer_4k.gltf"></a-asset-item>
@@ -98,20 +78,21 @@
 
       </a-entity>
 
-      <a-entity mindar-image-target="targetIndex: 1" id="target-entity-2"></a-entity>
+      <a-entity mindar-image-target="targetIndex: 1" id="target-entity-2">
         <a-gltf-model
           id="poeta"
           src="#poeta-model"
+          position="-0.2 0.5 1"
           rotation="90 0 -180"
           scale="-0.4 0.4 0.4"
           visible="false"
           animation-mixer="clip: Action.002; loop: repeat"
         ></a-gltf-model>
+      </a-entity>
 
     </a-scene>
 
     <script>
-      const THREE = AFRAME.THREE
       const hammer = document.getElementById('hammer')
       const tooltipImg = document.getElementById('tooltip-img')
       const hammerSound = new Audio('sounds/hammer.mp3')
@@ -144,32 +125,26 @@
       const targetEntity2 = document.getElementById('target-entity-2')
       const poetaModel = document.getElementById('poeta')
 
-    let poetaCleanupTimer = null
-    window.__poetaActive = false
+      let poetaCleanupTimer = null
 
-    function resetPoetaState() {
-    poetaModel.setAttribute('visible', false)
-    window.__poetaActive = false
-    poetaMusic.pause()
-    poetaMusic.currentTime = 0
-    poetaCleanupTimer = null
-    }
+      targetEntity2.addEventListener('targetFound', () => {
+        if (poetaCleanupTimer) { clearTimeout(poetaCleanupTimer); poetaCleanupTimer = null }
+        hammerVisible = false
+          poetaModel.setAttribute('visible', true)
+          poetaMusic.currentTime = 0
+          poetaMusic.play()
+        })
 
-    targetEntity2.addEventListener('targetFound', () => {
-    if (poetaCleanupTimer) { clearTimeout(poetaCleanupTimer); poetaCleanupTimer = null }
-    hammerVisible = false
-    window.__poetaActive = true
-    poetaModel.setAttribute('visible', true)
-    poetaMusic.currentTime = 0
-    poetaMusic.play()
-    })
-
-    targetEntity2.addEventListener('targetLost', () => {
-    window.__poetaActive = false
-    if (!poetaCleanupTimer) {
-      poetaCleanupTimer = setTimeout(resetPoetaState, 5000)
-    }
-    })
+      targetEntity2.addEventListener('targetLost', () => {
+        if (!poetaCleanupTimer) {
+        poetaCleanupTimer = setTimeout(() => {
+            poetaMusic.pause()
+            poetaMusic.currentTime = 0
+            poetaModel.setAttribute('visible', false)
+            poetaCleanupTimer = null
+          }, 5000)
+        }
+      })
 
       let tooltipTimer = null
 

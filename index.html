@@ -22,6 +22,7 @@
       <a-assets>
         <a-asset-item id="hammer-model" src="cross_pein_hammer_4k.gltf"></a-asset-item>
         <a-asset-item id="poeta-model" src="scene-tile/PoetaCarpinteiro.gltf"></a-asset-item>
+        <a-asset-item id="circle-model" src="Circle/Circle.gltf"></a-asset-item>
         <img id="phrase1" src="images/phrase1.png" crossorigin="anonymous" />
         <img id="phrase2" src="images/phrase2.png" crossorigin="anonymous" />
         <img id="phrase3" src="images/phrase3.png" crossorigin="anonymous" />
@@ -87,6 +88,16 @@
           scale="-0.4 0.4 0.4"
           visible="false"
           animation-mixer="clip: Action.002; loop: repeat"
+        ></a-gltf-model>
+      </a-entity>
+      <a-entity mindar-image-target="targetIndex: 2" id="target-entity-3">
+        <a-gltf-model
+          id="circle"
+          src="#circle-model"
+          position="0 0 0"
+          rotation="0 0 0"
+          scale="1 1 1"
+          animation-mixer="clip: *; loop: repeat"
         ></a-gltf-model>
       </a-entity>
 

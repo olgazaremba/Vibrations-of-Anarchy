@@ -3,254 +3,585 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AR Book</title>
-    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
+    <title>Vibrations of Anarchy</title>
+
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.147.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.147.0/examples/jsm/"
+      }
+    }
+    </script>
+
     <style>
-      * { margin: 0; padding: 0; }
-      body { overflow: hidden; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { overflow: hidden; background: #000; }
+
+      #mindar-container {
+        position: fixed; top: 0; left: 0;
+        width: 100vw; height: 100vh;
+      }
+      #mindar-container video,
+      #mindar-container canvas {
+        position: fixed !important; top: 0 !important; left: 0 !important;
+        width: 100vw !important; height: 100vh !important;
+        object-fit: cover !important;
+      }
+
+      #hint {
+        position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+        background: rgba(0,0,0,0.65); color: #fff; font-size: 14px;
+        font-family: sans-serif; padding: 10px 20px; border-radius: 20px;
+        pointer-events: none; transition: opacity 0.6s;
+        backdrop-filter: blur(4px); white-space: nowrap; z-index: 10000;
+        opacity: 0;
+      }
+
+      /* ── Poet HTML phrase overlays (from code 1) ── */
+      #phrases { position: fixed; inset: 0; pointer-events: none; z-index: 9999; }
+      .phrase { position: absolute; opacity: 0; transform: scale(0.1); }
+      .phrase img { max-width: 220px; height: auto; display: block; }
+
+      #start-overlay {
+        position: fixed; inset: 0; z-index: 20000;
+        background: #000;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 48px;
+      }
+      #start-overlay img { max-width: 82vw; max-height: 52vh; object-fit: contain; }
+      #btn-start {
+        padding: 16px 52px; font-size: 18px; font-family: sans-serif;
+        background: #fff; color: #000; border: none; border-radius: 30px;
+        cursor: pointer; letter-spacing: 0.06em; font-weight: 600;
+        transition: opacity 0.3s;
+      }
+      #btn-start:disabled { opacity: 0.45; cursor: default; }
     </style>
   </head>
   <body>
-    <a-scene
-      mindar-image="imageTargetSrc: targets.mind; autoStart: true; filterMinCF: 0.001; filterBeta: 0.001;"
-      color-space="sRGB"
-      vr-mode-ui="enabled: false"
-      device-orientation-permission-ui="enabled: false"
-      poeta-follow
-    >
-      <a-assets>
-        <a-asset-item id="hammer-model" src="cross_pein_hammer_4k.gltf"></a-asset-item>
-        <a-asset-item id="poeta-model" src="scene-tile/PoetaCarpinteiro.gltf"></a-asset-item>
-        <img id="phrase1" src="images/phrase1.png" crossorigin="anonymous" />
-        <img id="phrase2" src="images/phrase2.png" crossorigin="anonymous" />
-        <img id="phrase3" src="images/phrase3.png" crossorigin="anonymous" />
-        <img id="phrase4" src="images/phrase4.png" crossorigin="anonymous" />
-        <img id="phrase5" src="images/phrase5.png" crossorigin="anonymous" />
-        <img id="phrase6" src="images/phrase6.png" crossorigin="anonymous" />
-        <img id="phrase7" src="images/phrase7.png" crossorigin="anonymous" />
-        <img id="phrase8" src="images/phrase8.png" crossorigin="anonymous" />
-        <img id="tooltip" src="images/tooltip.png" crossorigin="anonymous" />
-      </a-assets>
 
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+    <div id="start-overlay">
+      <img src="images/cover.png" alt="Vibrations of Anarchy" />
+      <button id="btn-start" disabled>A carregar...</button>
+    </div>
 
-      <a-entity mindar-image-target="targetIndex: 0" id="target-entity">
-
-        <a-gltf-model
-          id="hammer"
-          src="#hammer-model"
-          position="0.1 0.05 0.1"
-          rotation="90 180 -135"
-          scale="3 3 3"
-          animation__hit="property: rotation; to: 90 180 -105; dur: 180; startEvents: hit; easing: easeInQuad"
-          animation__return="property: rotation; to: 90 180 -135; dur: 180; startEvents: return; easing: easeOutQuad"
-        ></a-gltf-model>
-
-        <a-image id="p1" src="#phrase1"
-          position="-0.22 0.2 0.05" width="0.405" height="0.0599"
-          scale="0.001 0.001 1" visible="false"></a-image>
-        <a-image id="p2" src="#phrase2"
-          position="0.22 0.2 0.05" width="0.405" height="0.0578"
-          scale="0.001 0.001 1" visible="false"></a-image>
-        <a-image id="p3" src="#phrase3"
-          position="-0.22 0.14 0.05" width="0.405" height="0.0559"
-          scale="0.001 0.001 1" visible="false"></a-image>
-        <a-image id="p4" src="#phrase4"
-          position="0.22 0.14 0.05" width="0.405" height="0.0517"
-          scale="0.001 0.001 1" visible="false"></a-image>
-        <a-image id="p5" src="#phrase5"
-          position="-0.22 -0.15 0.05" width="0.272" height="0.0853"
-          scale="0.001 0.001 1" visible="false"></a-image>
-        <a-image id="p6" src="#phrase6"
-          position="0.22 -0.15 0.05" width="0.312" height="0.0601"
-          scale="0.001 0.001 1" visible="false"></a-image>
-        <a-image id="p7" src="#phrase7"
-          position="-0.22 -0.25 0.05" width="0.369" height="0.057"
-          scale="0.001 0.001 1" visible="false"></a-image>
-        <a-image id="p8" src="#phrase8"
-          position="0.22 -0.25 0.05" width="0.369" height="0.0621"
-          scale="0.001 0.001 1" visible="false"></a-image>
-
-        <a-image id="tooltip-img" src="#tooltip"
-          position="0 0 0.3" width="0.3" height="0.3"
-          visible="false"></a-image>
-
-      </a-entity>
-
-      <a-entity mindar-image-target="targetIndex: 1" id="target-entity-2">
-        <a-gltf-model
-          id="poeta"
-          src="#poeta-model"
-          rotation="90 0 -180"
-          scale="-0.4 0.4 0.4"
-          visible="false"
-          animation-mixer="clip: Action.002; loop: repeat"
-        ></a-gltf-model>
-      </a-entity>
-
-    </a-scene>
+    <div id="mindar-container"></div>
+    <div id="hint"></div>
+    <div id="phrases"></div>
 
     <script>
-      const THREE = AFRAME.THREE
-      const hammer = document.getElementById('hammer')
-      const tooltipImg = document.getElementById('tooltip-img')
-      const hammerSound = new Audio('sounds/hammer.mp3')
-      const lyreMusic = new Audio('sounds/lyre.mp3')
-      const poetaMusic = new Audio('sounds/poema.mp3')
-      lyreMusic.loop = true
-      let musicStarted = false
-      let hammerVisible = false
-
-      document.addEventListener('touchstart', function() {
-        lyreMusic.play().then(() => { lyreMusic.pause(); lyreMusic.currentTime = 0 }).catch(() => {})
-        poetaMusic.load()
-      }, { once: true })
-
-      const phrases = [
-        { el: document.getElementById('p1'), finalPos: '-0.22 0.2 0.05' },
-        { el: document.getElementById('p2'), finalPos: '0.22 0.2 0.05' },
-        { el: document.getElementById('p3'), finalPos: '-0.22 0.14 0.05' },
-        { el: document.getElementById('p4'), finalPos: '0.22 0.14 0.05' },
-        { el: document.getElementById('p5'), finalPos: '-0.22 -0.15 0.05' },
-        { el: document.getElementById('p6'), finalPos: '0.22 -0.15 0.05' },
-        { el: document.getElementById('p7'), finalPos: '-0.22 -0.25 0.05' },
-        { el: document.getElementById('p8'), finalPos: '0.22 -0.25 0.05' },
-      ]
-
-      let animating = false
-      let step = 0
-
-      const targetEntity = document.getElementById('target-entity')
-      const targetEntity2 = document.getElementById('target-entity-2')
-      const poetaModel = document.getElementById('poeta')
-
-    let poetaCleanupTimer = null
-    let poetaActive = false
-
-
-    const poetaWorldPos = new THREE.Vector3()
-    const poetaWorldQuat = new THREE.Quaternion()
-    const poetaWorldScale = new THREE.Vector3()
-
-    function resetPoetaState() {
-      poetaModel.setAttribute('visible', false)
-      poetaActive = false
-      poetaMusic.pause()
-      poetaMusic.currentTime = 0
-      poetaCleanupTimer = null
-    }
-
-    targetEntity2.addEventListener('targetFound', () => {
-      if (poetaCleanupTimer) { clearTimeout(poetaCleanupTimer); poetaCleanupTimer = null }
-      hammerVisible = false
-      poetaActive = true
-      poetaModel.setAttribute('visible', true)
-      poetaMusic.currentTime = 0
-      poetaMusic.play()
-  })
-
-    targetEntity2.addEventListener('targetLost', () => {
-    poetaActive = false
-    if (!poetaCleanupTimer) {
-    poetaCleanupTimer = setTimeout(resetPoetaState, 5000)
-    }
-  })
-
-  AFRAME.registerComponent('poeta-follow', {
-  tick: function () {
-    if (!poetaActive) return
-    const targetObj = targetEntity2.object3D
-    targetObj.updateMatrixWorld(true)
-    targetObj.matrixWorld.decompose(poetaWorldPos, poetaWorldQuat, poetaWorldScale)
-
-    poetaModel.object3D.position.copy(poetaWorldPos)
-    poetaModel.object3D.quaternion.copy(poetaWorldQuat)
-    }
-  })
-
-      let tooltipTimer = null
-
-      targetEntity.addEventListener('targetLost', () => {
-        hammerVisible = false
-        lyreMusic.pause()
-        tooltipImg.setAttribute('visible', false)
-        tooltipImg.removeAttribute('animation__pulse')
-        if (tooltipTimer) {
-          clearTimeout(tooltipTimer)
-          tooltipTimer = null
-        }
+      document.getElementById('btn-start').addEventListener('click', function () {
+        document.getElementById('start-overlay').style.display = 'none'
+        document.getElementById('hint').textContent = 'A carregar alvos...'
+        document.getElementById('hint').style.opacity = '1'
+        if (typeof window._startAR === 'function') window._startAR()
       })
+    </script>
 
-      targetEntity.addEventListener('targetFound', () => {
-        hammerVisible = true
-        if (musicStarted) lyreMusic.play()
-        tooltipTimer = setTimeout(() => {
-          tooltipImg.setAttribute('visible', true)
-          tooltipImg.setAttribute('animation__pulse',
-            'property: position; from: 0 0 0.3; to: 0 0 0.45; dur: 800; loop: true; dir: alternate; easing: easeInOutSine')
-        }, 2000)
-      })
+    <script type="module">
+      import * as THREE     from 'three'
+      import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+      import { MindARThree } from 'https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js'
 
-      document.addEventListener('click', function () {
-        if (!hammerVisible) return
-        if (!musicStarted) {
-          lyreMusic.play()
-          musicStarted = true
-        }
+      const hint       = document.getElementById('hint')
+      const phrasesDiv = document.getElementById('phrases')
 
-        tooltipImg.setAttribute('visible', false)
-        tooltipImg.removeAttribute('animation__pulse')
+      window._startAR = async function () {
+        window._startAR = null
 
-        if (animating || step >= phrases.length) return
-        animating = true
+        try {
+          // ── MindAR ──────────────────────────────────────────────────────
+          const mindarThree = new MindARThree({
+            container: document.getElementById('mindar-container'),
+            imageTargetSrc: 'targets.mind',
+            uiScanning: false,
+            maxTrack: 2,
+            filterMinCF: 0.001,
+            filterBeta: 0.001,
+          })
+          const { renderer, scene, camera } = mindarThree
 
-        hammerSound.currentTime = 0
-        hammerSound.play()
+          // ── Lighting ────────────────────────────────────────────────────
+          scene.add(new THREE.AmbientLight(0xffffff, 1.5))
+          const dirLight = new THREE.DirectionalLight(0xffffff, 1)
+          dirLight.position.set(1, 2, 1)
+          scene.add(dirLight)
 
-        hammer.emit('hit')
+          // ── Anchors ─────────────────────────────────────────────────────
+          // targetIndex 0 → hammer   |   targetIndex 1 → poet
+          const hammerAnchor = mindarThree.addAnchor(0)
+          const poetaAnchor  = mindarThree.addAnchor(1)
 
-        setTimeout(() => {
-          hammer.emit('return')
+          // ── Loader ──────────────────────────────────────────────────────
+          const loader = new GLTFLoader()
 
-          const phrase = phrases[step]
-          const el = phrase.el
+          // ══════════════════════════════════════════════════════════════════
+          // HAMMER TARGET (from code 2, ported to Three.js)
+          // ══════════════════════════════════════════════════════════════════
+          let hammerModel   = null
+          let hammerMixer   = null
+          let hammerAction  = null
+          let hammerActive  = false
+          let hammerVisible = false
 
-          el.setAttribute('visible', true)
-          el.setAttribute('position', '0 0 0.05')
-          el.setAttribute('scale', '0.1 0.1 1')
+          // Tooltip sprite (replaces <a-image id="tooltip">)
+          let tooltipMesh   = null
+          let tooltipTimer  = null
+          let tooltipPulseT = 0
+          let tooltipPulsing = false
 
-          setTimeout(() => {
-            el.setAttribute('animation__grow',
-              'property: scale; from: 0.1 0.1 1; to: 1.5 1.5 1; dur: 700; easing: easeOutBack')
-          }, 50)
+          // AR-space phrase planes (replaces <a-image id="pN">)
+          // Each phrase is a PlaneGeometry with a texture, placed in the hammer anchor
+          const phraseData = [
+            { position: [-0.22,  0.20, 0.05], width: 0.405, height: 0.0599 },
+            { position: [ 0.22,  0.20, 0.05], width: 0.405, height: 0.0578 },
+            { position: [-0.22,  0.14, 0.05], width: 0.405, height: 0.0559 },
+            { position: [ 0.22,  0.14, 0.05], width: 0.405, height: 0.0517 },
+            { position: [-0.22, -0.15, 0.05], width: 0.272, height: 0.0853 },
+            { position: [ 0.22, -0.15, 0.05], width: 0.312, height: 0.0601 },
+            { position: [-0.22, -0.25, 0.05], width: 0.369, height: 0.0570 },
+            { position: [ 0.22, -0.25, 0.05], width: 0.369, height: 0.0621 },
+          ]
+          const phraseMeshes = []   // Three.js Mesh objects in AR space
+          const phraseAnims  = []   // per-phrase animation state
 
-          setTimeout(() => {
-            el.setAttribute('animation__shrink',
-              'property: scale; to: 1 1 1; dur: 500; easing: easeInOutQuad')
-            el.setAttribute('animation__move',
-              `property: position; to: ${phrase.finalPos}; dur: 800; easing: easeInOutQuad`)
-          }, 500)
+          const texLoader = new THREE.TextureLoader()
 
-          setTimeout(() => {
-            animating = false
-            step++
-            tooltipImg.setAttribute('visible', true)
-            tooltipImg.setAttribute('animation__pulse',
-              'property: position; from: 0 0 0.3; to: 0 0 0.45; dur: 800; loop: true; dir: alternate; easing: easeInOutSine')
+          // Load hammer model
+          loader.load('models/cross_pein_hammer_4k.gltf', (gltf) => {
+            hammerModel = gltf.scene
+            // Same transform as code 2: rotation="90 180 -135", scale="3 3 3", position="0.1 0.05 0.1"
+            hammerModel.rotation.set(
+              THREE.MathUtils.degToRad(90),
+              THREE.MathUtils.degToRad(180),
+              THREE.MathUtils.degToRad(-135)
+            )
+            hammerModel.scale.set(3, 3, 3)
+            hammerModel.position.set(0.1, 0.05, 0.1)
+            hammerAnchor.group.add(hammerModel)
 
-            if (step >= phrases.length) {
-              tooltipImg.setAttribute('visible', false)
-              tooltipImg.removeAttribute('animation__pulse')
-              setTimeout(() => {
-                hammer.setAttribute('visible', false)
-              }, 600)
+            if (gltf.animations?.length > 0) {
+              hammerMixer  = new THREE.AnimationMixer(hammerModel)
+              hammerAction = hammerMixer.clipAction(gltf.animations[0])
+              hammerAction.setLoop(THREE.LoopOnce)
+              hammerAction.clampWhenFinished = true
             }
-          }, 1100)
+          })
 
-        }, 360)
-      })
+          // Load phrase textures and build plane meshes (hidden initially)
+          phraseData.forEach((data, i) => {
+            texLoader.load(`images/phrase${i + 1}.png`, (tex) => {
+              tex.encoding = THREE.sRGBEncoding
+              const mat  = new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide })
+              const geo  = new THREE.PlaneGeometry(data.width, data.height)
+              const mesh = new THREE.Mesh(geo, mat)
+              mesh.position.set(...data.position)
+              mesh.scale.set(0.001, 0.001, 1)
+              mesh.visible = false
+              hammerAnchor.group.add(mesh)
+              phraseMeshes[i] = mesh
+              phraseAnims[i]  = { active: false, t: 0, phase: 'idle' }
+            })
+          })
+
+          // Tooltip sprite
+          texLoader.load('images/tooltip.png', (tex) => {
+            tex.encoding = THREE.sRGBEncoding
+            const mat  = new THREE.SpriteMaterial({ map: tex, transparent: true })
+            tooltipMesh = new THREE.Sprite(mat)
+            tooltipMesh.scale.set(0.3, 0.3, 1)
+            tooltipMesh.position.set(0, 0, 0.3)
+            tooltipMesh.visible = false
+            hammerAnchor.group.add(tooltipMesh)
+          })
+
+          // ── Audio ────────────────────────────────────────────────────────
+          const hammerSound = new Audio('sounds/hammer.mp3')
+          const lyreMusic   = new Audio('sounds/lyre.mp3')
+          const poetaMusic  = new Audio('sounds/poema.mp3')
+          lyreMusic.loop = true
+
+          poetaMusic.addEventListener('ended', () => {
+            if (!poetaCleanupTimer) poetaCleanupTimer = setTimeout(resetPoetaState, 5000)
+          })
+
+          document.addEventListener('touchstart', () => {
+            lyreMusic.play().then(() => { lyreMusic.pause(); lyreMusic.currentTime = 0 }).catch(() => {})
+            poetaMusic.load()
+          }, { once: true })
+
+          // ── Hammer state ─────────────────────────────────────────────────
+          let hammerStep      = 0
+          let hammerAnimating = false
+          let musicStarted    = false
+
+          // Hammer swing tween state
+          let hammerSwing = { active: false, t: 0, phase: 'idle' }
+          const BASE_ROT_Z = THREE.MathUtils.degToRad(-135)
+          const HIT_ROT_Z  = THREE.MathUtils.degToRad(-105)
+
+          function doHammerSwing() {
+            if (!hammerModel) return
+            hammerSwing = { active: true, t: 0, phase: 'hit' }
+          }
+
+          function updateHammerSwing(delta) {
+            if (!hammerModel || !hammerSwing.active) return
+            const speed = 1 / 0.18  // 180 ms
+            hammerSwing.t += delta * speed
+            if (hammerSwing.phase === 'hit') {
+              const p = Math.min(hammerSwing.t, 1)
+              hammerModel.rotation.z = THREE.MathUtils.lerp(BASE_ROT_Z, HIT_ROT_Z, easeInQuad(p))
+              if (hammerSwing.t >= 1) { hammerSwing.t = 0; hammerSwing.phase = 'return' }
+            } else if (hammerSwing.phase === 'return') {
+              const p = Math.min(hammerSwing.t, 1)
+              hammerModel.rotation.z = THREE.MathUtils.lerp(HIT_ROT_Z, BASE_ROT_Z, easeOutQuad(p))
+              if (hammerSwing.t >= 1) { hammerSwing.active = false; hammerSwing.phase = 'idle' }
+            }
+          }
+
+          function easeInQuad(t)  { return t * t }
+          function easeOutQuad(t) { return t * (2 - t) }
+          function easeOutBack(t) {
+            const c1 = 1.70158, c3 = c1 + 1
+            return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2)
+          }
+          function easeInOutQuad(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t }
+
+          // Phrase tween update
+          function updatePhraseTweens(delta) {
+            phraseMeshes.forEach((mesh, i) => {
+              if (!mesh) return
+              const anim = phraseAnims[i]
+              if (!anim || !anim.active) return
+              const spd = 1 / 0.7
+              anim.t += delta * spd
+              if (anim.phase === 'grow') {
+                const p = Math.min(anim.t, 1)
+                const s = THREE.MathUtils.lerp(0.1, 1.5, easeOutBack(p))
+                mesh.scale.set(s, s, 1)
+                if (anim.t >= 1) {
+                  anim.t = 0; anim.phase = 'shrink'
+                  // switch to shrink speed
+                }
+              } else if (anim.phase === 'shrink') {
+                const spd2 = 1 / 0.5
+                anim.t += delta * spd2 - delta * spd  // re-accumulated below
+                // re-do properly: store elapsed
+              }
+            })
+          }
+
+          // Better per-phrase tween using wall-clock elapsed
+          const phraseAnimState = []  // { phase, startTime }
+
+          function revealPhraseAR(i) {
+            const mesh = phraseMeshes[i]
+            if (!mesh) return
+            mesh.visible = true
+            mesh.position.set(0, 0, 0.05)  // start at centre
+            mesh.scale.set(0.1, 0.1, 1)
+            phraseAnimState[i] = { phase: 'grow', startTime: performance.now() }
+          }
+
+          function updatePhraseAnimations() {
+            const now = performance.now()
+            phraseMeshes.forEach((mesh, i) => {
+              if (!mesh || !phraseAnimState[i]) return
+              const state = phraseAnimState[i]
+              const elapsed = (now - state.startTime) / 1000
+
+              if (state.phase === 'grow') {
+                // 0–0.7s: grow to 1.5
+                const p = Math.min(elapsed / 0.7, 1)
+                const s = THREE.MathUtils.lerp(0.1, 1.5, easeOutBack(p))
+                mesh.scale.set(s, s, 1)
+                if (elapsed >= 0.7) {
+                  state.phase = 'shrink'
+                  state.startTime = now
+                }
+              } else if (state.phase === 'shrink') {
+                // 0–0.5s: shrink to 1 AND move to final position
+                const p   = Math.min(elapsed / 0.8, 1)
+                const s   = THREE.MathUtils.lerp(1.5, 1, easeInOutQuad(p))
+                mesh.scale.set(s, s, 1)
+                // move to final pos
+                const fp  = phraseData[i].position
+                const cx  = THREE.MathUtils.lerp(0, fp[0], easeInOutQuad(p))
+                const cy  = THREE.MathUtils.lerp(0, fp[1], easeInOutQuad(p))
+                mesh.position.set(cx, cy, 0.05)
+                if (elapsed >= 0.8) {
+                  mesh.position.set(...phraseData[i].position)
+                  mesh.scale.set(1, 1, 1)
+                  state.phase = 'done'
+                }
+              }
+            })
+          }
+
+          function triggerHammerClick() {
+            if (!hammerVisible) return
+
+            if (!musicStarted) {
+              lyreMusic.play().catch(() => {})
+              musicStarted = true
+            }
+
+            // hide tooltip on first click
+            if (tooltipMesh) tooltipMesh.visible = false
+            tooltipPulsing = false
+
+            if (hammerAnimating || hammerStep >= phraseData.length) return
+            hammerAnimating = true
+
+            hammerSound.currentTime = 0
+            hammerSound.play().catch(() => {})
+            doHammerSwing()
+
+            setTimeout(() => {
+              revealPhraseAR(hammerStep)
+              hammerStep++
+              hammerAnimating = false
+
+              if (hammerStep < phraseData.length) {
+                // show tooltip again after reveal
+                if (tooltipMesh) {
+                  tooltipMesh.visible = true
+                  tooltipPulseT = 0
+                  tooltipPulsing = true
+                }
+              } else {
+                // all phrases revealed — hide hammer after short delay
+                if (tooltipMesh) tooltipMesh.visible = false
+                tooltipPulsing = false
+                setTimeout(() => { if (hammerModel) hammerModel.visible = false }, 600)
+              }
+            }, 360)
+          }
+
+          // Hammer anchor events
+          hammerAnchor.onTargetFound = () => {
+            resetPoetaState()
+            hammerVisible = true
+            hammerActive  = true
+            hint.style.opacity = '0'
+
+            // Show tooltip after 2 s if no tap yet
+            if (tooltipTimer) clearTimeout(tooltipTimer)
+            tooltipTimer = setTimeout(() => {
+              if (tooltipMesh && hammerStep === 0) {
+                tooltipMesh.visible = true
+                tooltipPulseT = 0
+                tooltipPulsing = true
+              }
+            }, 2000)
+          }
+
+          hammerAnchor.onTargetLost = () => {
+            hammerVisible = false
+            hammerActive  = false
+            lyreMusic.pause()
+            if (tooltipMesh) tooltipMesh.visible = false
+            tooltipPulsing = false
+            if (tooltipTimer) { clearTimeout(tooltipTimer); tooltipTimer = null }
+            hint.style.opacity = '1'
+          }
+
+          // ══════════════════════════════════════════════════════════════════
+          // POET TARGET — kept EXACTLY as in code 1
+          // ══════════════════════════════════════════════════════════════════
+          let poetaModel   = null
+          let persistGroup = null
+          let poetaMixer   = null
+          let poetaActive  = false
+          let poetaCleanupTimer = null
+
+          const lastPoetaPos  = new THREE.Vector3()
+          const lastPoetaQuat = new THREE.Quaternion()
+          const lastPoetaScl  = new THREE.Vector3(1, 1, 1)
+
+          // HTML overlay phrases (same as code 1)
+          const layout = [
+            { left: '4%',  top:    '15%' },
+            { right: '4%', top:    '15%' },
+            { left: '4%',  top:    '30%' },
+            { right: '4%', top:    '30%' },
+            { left: '4%',  bottom: '22%' },
+            { right: '4%', bottom: '22%' },
+            { left: '4%',  bottom: '10%' },
+            { right: '4%', bottom: '10%' },
+          ]
+
+          const phraseEls = layout.map((pos, i) => {
+            const wrap = document.createElement('div')
+            wrap.className = 'phrase'
+            Object.assign(wrap.style, pos)
+            const img = document.createElement('img')
+            img.src = `images/phrase${i + 1}.png`
+            wrap.appendChild(img)
+            phrasesDiv.appendChild(wrap)
+            return wrap
+          })
+
+          let poetaStep      = 0
+          let poetaAnimating = false
+          let poetaMusicStarted = false
+
+          function resetPoetaState() {
+            if (persistGroup) {
+              if (poetaModel) {
+                persistGroup.remove(poetaModel)
+                poetaAnchor.group.add(poetaModel)
+              }
+              scene.remove(persistGroup)
+              persistGroup = null
+            }
+            poetaActive        = false
+            poetaAnimating     = false
+            poetaMusicStarted  = false
+            poetaStep          = 0
+            if (poetaCleanupTimer) { clearTimeout(poetaCleanupTimer); poetaCleanupTimer = null }
+            lyreMusic.pause()
+            poetaMusic.pause()
+            poetaMusic.currentTime = 0
+            phraseEls.forEach(el => { el.style.opacity = '0'; el.style.transform = 'scale(0.1)' })
+            phrasesDiv.style.display = 'none'
+            hint.style.opacity = '1'
+          }
+
+          function revealPoetaPhrase() {
+            if (poetaStep >= phraseEls.length) return
+            const el = phraseEls[poetaStep]
+            el.style.transition = 'none'
+            el.style.transform  = 'scale(0.1)'
+            el.style.opacity    = '0'
+            void el.offsetWidth
+            el.style.transition = 'transform 0.7s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s'
+            el.style.transform  = 'scale(1.3)'
+            el.style.opacity    = '1'
+            setTimeout(() => {
+              el.style.transition = 'transform 0.5s ease-in-out'
+              el.style.transform  = 'scale(1)'
+            }, 600)
+            poetaStep++
+          }
+
+          loader.load('models/PoetaCarpinteiro.gltf', (gltf) => {
+            poetaModel = gltf.scene
+            poetaModel.rotation.set(Math.PI / 2, 0, -Math.PI)
+            poetaModel.scale.set(0.4, 0.4, 0.4)
+            poetaModel.position.set(0, 0, 0)
+            poetaAnchor.group.add(poetaModel)
+            if (gltf.animations?.length > 0) {
+              poetaMixer = new THREE.AnimationMixer(poetaModel)
+              const clip = THREE.AnimationClip.findByName(gltf.animations, 'Action.002')
+                || gltf.animations[0]
+              poetaMixer.clipAction(clip).play()
+            }
+          })
+
+          poetaAnchor.onTargetFound = () => {
+            if (persistGroup && poetaModel) {
+              persistGroup.remove(poetaModel)
+              scene.remove(persistGroup)
+              persistGroup = null
+              poetaAnchor.group.add(poetaModel)
+            }
+            if (poetaCleanupTimer) { clearTimeout(poetaCleanupTimer); poetaCleanupTimer = null }
+            poetaActive = true
+            if (poetaMusicStarted) lyreMusic.play()
+            hint.style.opacity = '0'
+            phrasesDiv.style.display = ''
+            if (poetaMusic.paused) {
+              poetaMusic.currentTime = 0
+              poetaMusic.play().catch(() => {})
+            }
+          }
+
+          poetaAnchor.onTargetLost = () => {
+            if (poetaModel) {
+              persistGroup = new THREE.Group()
+              persistGroup.position.copy(lastPoetaPos)
+              persistGroup.quaternion.copy(lastPoetaQuat)
+              persistGroup.scale.copy(lastPoetaScl)
+              poetaAnchor.group.remove(poetaModel)
+              persistGroup.add(poetaModel)
+              scene.add(persistGroup)
+            }
+            if (poetaMusic.paused) {
+              if (!poetaCleanupTimer) poetaCleanupTimer = setTimeout(resetPoetaState, 5000)
+            }
+          }
+
+          function triggerPoetaClick() {
+            if (!poetaActive || poetaAnimating || poetaStep >= phraseEls.length) return
+            if (!poetaMusicStarted) { lyreMusic.play().catch(() => {}); poetaMusicStarted = true }
+            poetaAnimating = true
+            if (hammerModel) {
+              hammerSound.currentTime = 0
+              hammerSound.play().catch(() => {})
+            }
+            setTimeout(() => { revealPoetaPhrase(); poetaAnimating = false }, 360)
+          }
+
+          // ── Unified canvas tap / click ────────────────────────────────────
+          renderer.domElement.addEventListener('click', () => {
+            if (hammerActive) {
+              triggerHammerClick()
+              return
+            }
+            if (poetaActive) {
+              triggerPoetaClick()
+            }
+          })
+
+          // ── Start camera ─────────────────────────────────────────────────
+          await mindarThree.start()
+          hint.textContent = 'Aponte a câmera para um dos alvos'
+          hint.style.opacity = '1'
+
+          // ── Render loop ──────────────────────────────────────────────────
+          const clock = new THREE.Clock()
+          renderer.setAnimationLoop(() => {
+            const delta = clock.getDelta()
+
+            // Hammer mixers / tweens
+            if (hammerMixer)  hammerMixer.update(delta)
+            updateHammerSwing(delta)
+
+            // Tooltip pulse (bob up/down)
+            if (tooltipMesh && tooltipPulsing) {
+              tooltipPulseT += delta
+              const baseZ = 0.3
+              tooltipMesh.position.z = baseZ + Math.sin(tooltipPulseT * Math.PI / 0.8) * 0.075
+            }
+
+            // Phrase AR tweens
+            updatePhraseAnimations()
+
+            // Poet
+            if (poetaMixer) poetaMixer.update(delta)
+            if (poetaActive) {
+              poetaAnchor.group.getWorldPosition(lastPoetaPos)
+              poetaAnchor.group.getWorldQuaternion(lastPoetaQuat)
+              poetaAnchor.group.getWorldScale(lastPoetaScl)
+            }
+
+            renderer.render(scene, camera)
+          })
+
+        } catch (e) {
+          console.error('Erro AR:', e)
+          hint.textContent = 'Erro: ' + (e.message || String(e))
+          hint.style.opacity = '1'
+        }
+      }
+
+      // Unlock button once all imports resolve
+      const btn = document.getElementById('btn-start')
+      btn.textContent = 'Iniciar AR'
+      btn.disabled = false
     </script>
   </body>
 </html>

@@ -125,22 +125,15 @@
       const targetEntity2 = document.getElementById('target-entity-2')
       const poetaModel = document.getElementById('poeta')
 
-      let poetaLoaded = false
       let poetaCleanupTimer = null
-
-      poetaModel.addEventListener('model-loaded', () => {
-        poetaLoaded = true
-      })
 
       targetEntity2.addEventListener('targetFound', () => {
         if (poetaCleanupTimer) { clearTimeout(poetaCleanupTimer); poetaCleanupTimer = null }
         hammerVisible = false
-        if (poetaLoaded) {
           poetaModel.setAttribute('visible', true)
           poetaMusic.currentTime = 0
           poetaMusic.play()
-        }
-      })
+        })
 
       targetEntity2.addEventListener('targetLost', () => {
         if (!poetaCleanupTimer) {

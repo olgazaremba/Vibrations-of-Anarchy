@@ -214,9 +214,9 @@
 			"name":"Material.012",
 			"pbrMetallicRoughness":{
 				"baseColorFactor":[
-					0.3427025079727173,
-					0.17437389492988586,
-					0.0032886145636439323,
+					0.7121133804321289,
+					0.4183315634727478,
+					0.0399906225502491,
 					1
 				],
 				"metallicFactor":0,
@@ -588,7 +588,7 @@
 	"buffers":[
 		{
 			"byteLength":1084648,
-			"uri":"Circle.bin"
+			"uri":"newCircle.bin"
 		}
 	]
 }

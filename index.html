@@ -138,11 +138,9 @@
     </a-scene>
 
     <script>
-      document.getElementById('start-btn').addEventListener('click', function () {
+document.getElementById('start-btn').addEventListener('click', function () {
   const screen = document.getElementById('start-screen')
   screen.style.display = 'none'
-  lyreMusic.play().then(() => { lyreMusic.pause(); lyreMusic.currentTime = 0 }).catch(() => {})
-  poetaMusic.load()
 })
       const hammer = document.getElementById('hammer')
       const tooltipImg = document.getElementById('tooltip-img')

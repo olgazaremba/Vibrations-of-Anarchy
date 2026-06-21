@@ -216,8 +216,9 @@
         }, 2000)
       })
 
-      document.addEventListener('click', function () {
-        if (!hammerVisible) return
+document.addEventListener('click', function () {
+  if (!hammerVisible) return
+  if (!targetEntity.object3D.visible) return
         if (!musicStarted) {
           lyreMusic.play()
           musicStarted = true

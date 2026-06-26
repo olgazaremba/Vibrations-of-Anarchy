@@ -83,32 +83,32 @@
         ></a-gltf-model>
 
         <a-image id="p1" src="#phrase1"
-          position="-0.05 0.1 0.05" width="0.405" height="0.0599"
+          position="-0.15 0.22 0.05" width="0.405" height="0.0599"
           scale="0.001 0.001 1" visible="false"></a-image>
         <a-image id="p2" src="#phrase2"
-          position="0.12 0.1 0.05" width="0.405" height="0.0578"
+          position="0.15 0.22 0.05" width="0.405" height="0.0578"
           scale="0.001 0.001 1" visible="false"></a-image>
         <a-image id="p3" src="#phrase3"
-          position="-0.05 0.06 0.05" width="0.405" height="0.0559"
+          position="-0.15 0.13 0.05" width="0.405" height="0.0559"
           scale="0.001 0.001 1" visible="false"></a-image>
         <a-image id="p4" src="#phrase4"
-          position="0.1 0.06 0.05" width="0.405" height="0.0517"
+          position="0.15 0.13 0.05" width="0.405" height="0.0517"
           scale="0.001 0.001 1" visible="false"></a-image>
         <a-image id="p5" src="#phrase5"
-          position="-0.12 -0.08 0.05" width="0.272" height="0.0853"
+          position="-0.15 -0.05 0.05" width="0.272" height="0.0853"
           scale="0.001 0.001 1" visible="false"></a-image>
         <a-image id="p6" src="#phrase6"
-          position="0.12 -0.08 0.05" width="0.312" height="0.0601"
+          position="0.15 -0.05 0.05" width="0.312" height="0.0601"
           scale="0.001 0.001 1" visible="false"></a-image>
         <a-image id="p7" src="#phrase7"
-          position="-0.08 -0.1 0.05" width="0.369" height="0.057"
+          position="-0.15 -0.13 0.05" width="0.369" height="0.057"
           scale="0.001 0.001 1" visible="false"></a-image>
         <a-image id="p8" src="#phrase8"
-          position="0.07 -0.1 0.05" width="0.369" height="0.0621"
+          position="0.15 -0.13 0.05" width="0.369" height="0.0621"
           scale="0.001 0.001 1" visible="false"></a-image>
 
         <a-image id="tooltip-img" src="#tooltip"
-          position="0 0 0.3" width="0.3" height="0.3"
+          position="0 0 0.6" width="0.3" height="0.6"
           visible="false"></a-image>
 
       </a-entity>
@@ -210,7 +210,7 @@ document.getElementById('start-btn').addEventListener('click', function () {
         tooltipTimer = setTimeout(() => {
           tooltipImg.setAttribute('visible', true)
           tooltipImg.setAttribute('animation__pulse',
-            'property: position; from: 0 0 0.3; to: 0 0 0.45; dur: 800; loop: true; dir: alternate; easing: easeInOutSine')
+            'property: position; from: 0 0 0.6; to: 0 0 0.75; dur: 800; loop: true; dir: alternate; easing: easeInOutSine')
         }, 2000)
       })
 

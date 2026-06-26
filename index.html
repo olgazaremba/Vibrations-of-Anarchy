@@ -108,7 +108,7 @@
           scale="0.001 0.001 1" visible="false"></a-image>
 
         <a-image id="tooltip-img" src="#tooltip"
-          position="0.08 0 0.6" width="0.3" height="0.3"
+          position="0.07 0 0.6" width="0.3" height="0.3"
           visible="false"></a-image>
 
       </a-entity>
@@ -210,7 +210,7 @@ document.getElementById('start-btn').addEventListener('click', function () {
         tooltipTimer = setTimeout(() => {
           tooltipImg.setAttribute('visible', true)
           tooltipImg.setAttribute('animation__pulse',
-            'property: position; from: 0.08 0 0.4; to: 0.08 0 0.55; dur: 800; loop: true; dir: alternate; easing: easeInOutSine')
+            'property: position; from: 0.07 0 0.4; to: 0.07 0 0.55; dur: 800; loop: true; dir: alternate; easing: easeInOutSine')
         }, 2000)
       })
 
@@ -260,7 +260,7 @@ document.addEventListener('click', function () {
             step++
             tooltipImg.setAttribute('visible', true)
             tooltipImg.setAttribute('animation__pulse',
-              'property: position; from: 0.08 0 0.4; to: 0.08 0 0.55; dur: 800; loop: true; dir: alternate; easing: easeInOutSine')
+              'property: position; from: 0.07 0 0.4; to: 0.07 0 0.55; dur: 800; loop: true; dir: alternate; easing: easeInOutSine')
 
             if (step >= phrases.length) {
               tooltipImg.setAttribute('visible', false)

@@ -153,13 +153,13 @@ document.getElementById('start-btn').addEventListener('click', function () {
 
 
       const phrases = [
-        { el: document.getElementById('p1'), finalPos: '-0.15 0.18 0.05' },
+        { el: document.getElementById('p1'), finalPos: '-0.165 0.18 0.05' },
         { el: document.getElementById('p2'), finalPos: '0.2 0.18 0.05' },
-        { el: document.getElementById('p3'), finalPos: '-0.15 0.12 0.05' },
+        { el: document.getElementById('p3'), finalPos: '-0.165 0.12 0.05' },
         { el: document.getElementById('p4'), finalPos: '0.18 0.12 0.05' },
-        { el: document.getElementById('p5'), finalPos: '-0.15 -0.08 0.05' },
+        { el: document.getElementById('p5'), finalPos: '-0.17 -0.08 0.05' },
         { el: document.getElementById('p6'), finalPos: '0.16 -0.08 0.05' },
-        { el: document.getElementById('p7'), finalPos: '-0.15 -0.16 0.05' },
+        { el: document.getElementById('p7'), finalPos: '-0.165 -0.16 0.05' },
         { el: document.getElementById('p8'), finalPos: '0.18 -0.16 0.05' },
       ]
 
@@ -210,7 +210,7 @@ document.getElementById('start-btn').addEventListener('click', function () {
         tooltipTimer = setTimeout(() => {
           tooltipImg.setAttribute('visible', true)
           tooltipImg.setAttribute('animation__pulse',
-            'property: position; from: 0 0 0.6; to: 0 0 0.75; dur: 800; loop: true; dir: alternate; easing: easeInOutSine')
+            'property: position; from: 0.1 0 0.6; to: 0.1 0 0.75; dur: 800; loop: true; dir: alternate; easing: easeInOutSine')
         }, 2000)
       })
 
